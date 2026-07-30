@@ -1,3 +1,11 @@
+---
+name: website-speed-optimization
+description: >
+  Find and fix website performance problems in Next.js apps. Use this skill for
+  Core Web Vitals, bundle size, images, fonts, scripts, caching, server response
+  time, hydration, and runtime performance.
+---
+
 # Website Speed Optimization
 
 > Next.js website performance audit and optimization skill

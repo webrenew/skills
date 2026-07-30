@@ -1,3 +1,11 @@
+---
+name: cms-integration
+description: >
+  Choose and connect a headless CMS to a Next.js app. Use this skill for CMS
+  selection, content models, draft mode, live preview, webhooks, revalidation,
+  type generation, caching, and migration.
+---
+
 # CMS Integration
 
 > Headless CMS integration patterns for Next.js applications
