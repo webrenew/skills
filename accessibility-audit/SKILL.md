@@ -1,3 +1,11 @@
+---
+name: accessibility-audit
+description: >
+  Audit and improve WCAG 2.2 AA accessibility in Next.js apps. Use this skill for
+  semantic HTML, ARIA, keyboard access, screen readers, forms, focus, contrast,
+  automated tests, and compliance checks.
+---
+
 # Accessibility Audit
 
 > WCAG 2.2 compliance audit and implementation for Next.js applications

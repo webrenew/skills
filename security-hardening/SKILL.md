@@ -1,3 +1,11 @@
+---
+name: security-hardening
+description: >
+  Find and fix common security gaps in Next.js apps. Use this skill for security
+  headers, authentication, authorization, Server Actions, API routes, validation,
+  rate limits, dependency checks, and OWASP reviews.
+---
+
 # Security Hardening
 
 > Next.js security hardening, OWASP compliance, and production security checklist

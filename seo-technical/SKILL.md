@@ -1,3 +1,11 @@
+---
+name: seo-technical
+description: >
+  Audit and improve technical SEO in Next.js apps. Use this skill for metadata,
+  structured data, Open Graph, sitemaps, robots rules, canonical URLs, hreflang,
+  redirects, search visibility, and crawlability.
+---
+
 # Technical SEO
 
 > Next.js technical SEO audit and implementation skill
