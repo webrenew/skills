@@ -16,6 +16,7 @@ We partner with [Vercel](https://vercel.com), [Blackbox.ai](https://blackbox.ai)
 | [vercel-marketing-analytics](./vercel-marketing-analytics) | Vercel Analytics event strategy — user journeys, funnels, CTA tracking, lead generation, and conversion measurement |
 | [asd-ste100-writing](./asd-ste100-writing) | Clear product copy with ASD-STE100 Simplified Technical English and benefit-first framing |
 | [dependabot-batch](./dependabot-batch) | Collapse many open Dependabot PRs into one branch and one PR — manifest edits, single lockfile regeneration, gates, held-back bumps |
+| [overscroll-behavior](./overscroll-behavior) | Stop the desktop rubber-band bounce and keep mobile pull-to-refresh — `overscroll-behavior: none` gated behind `(pointer: fine)`, `contain` for nested scrollers |
 
 ## Skill Structure
 
