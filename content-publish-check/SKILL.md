@@ -90,6 +90,11 @@ One pass per concern. A pass that tries to fix everything fixes nothing.
 
 ## 4. Search and AI-answer checks
 
+These checks apply to posts, case studies and pages. A channel post (social, Google Business
+Profile, email) skips them: check it against its channel's limits in
+`content-repurpose/references/channel-formats.md`, its link and UTM tags, and steps 1, 3, 5
+and 6.
+
 | Check | Pass when |
 |---|---|
 | SEO title | 60 characters or fewer, target query near the start |

@@ -86,6 +86,16 @@ Same sections, as headings: `Voice`, `Readers`, `Places`, `Claim limits`, `Autho
 
 Write the proof bank as a table with the same columns as `ProofEntry`.
 
+## No business profile yet
+
+`lib/business-profile.ts` comes from `launch-lead-triage-agent`. A site without it (no triage
+agent, or no code store) still keeps one store for services and prices: create it once with
+the same fields (`version`, `services` with `key`, `name` and `priceGuide`, `tone`,
+`neverSay`), as `lib/business-profile.ts` in code or `business-profile.md` beside the kit. If
+the business already keeps services and prices in its own config, point the kit at that file
+instead. Never keep a second copy in the kit. When the triage agent comes later, it reads the
+same file.
+
 ## Proof bank examples
 
 | id | type | summary | place | date | source | consent | useUntil |
