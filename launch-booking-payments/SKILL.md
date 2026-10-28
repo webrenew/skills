@@ -105,7 +105,8 @@ export async function startCheckout(product: keyof typeof PRICES, leadId: string
     success_url: "https://example.com/thanks?session_id={CHECKOUT_SESSION_ID}",
     cancel_url: "https://example.com/pricing",
   })
-  redirect(session.url!)
+  if (!session.url) throw new Error("Stripe returned no checkout URL")
+  redirect(session.url)
 }
 ```
 

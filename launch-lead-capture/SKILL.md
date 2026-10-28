@@ -93,19 +93,27 @@ const leadSchema = z.object({
   phone: z.string().trim().max(30).optional(),
   need: z.string().trim().min(1).max(2000),
   marketingConsent: z.boolean(),
-  website: z.string().max(0),            // honeypot: must stay empty
+  website: z.string().optional(),        // honeypot: people leave it empty
   startedAt: z.coerce.number(),          // time trap
   utm: z.record(z.string(), z.string().max(200)).optional(),
 }).refine((lead) => lead.email || lead.phone, { message: "Add an email or a phone number." })
 
+function looksLikeBot(input: unknown) {
+  const fields = (input ?? {}) as { website?: unknown; startedAt?: unknown }
+  const filledHoneypot = typeof fields.website === "string" && fields.website !== ""
+  const tooFast = Date.now() - Number(fields.startedAt) < 3000
+  return filledHoneypot || !(Number(fields.startedAt) > 0) || tooFast
+}
+
 export async function submitLead(input: unknown) {
+  // Check the bot traps before validation, so a bot gets the normal success state,
+  // not field errors that teach it what to change.
+  if (looksLikeBot(input)) return { ok: true as const }
+
   const parsed = leadSchema.safeParse(input)
   if (!parsed.success) return { ok: false as const, errors: z.flattenError(parsed.error).fieldErrors }
 
   const lead = parsed.data
-  const isBot = lead.website !== "" || Date.now() - lead.startedAt < 3000
-  if (isBot) return { ok: true as const }           // look normal to bots
-
   const { id } = await db.leads.insert({
     name: lead.name, email: lead.email || null, phone: lead.phone || null, need: lead.need,
     marketingConsent: lead.marketingConsent, consentAt: lead.marketingConsent ? new Date() : null,
