@@ -65,7 +65,7 @@ approves. A new post needs `title`, `publishedAt` and `updatedAt`.
     "blocks": [
       {
         "type": "text",
-        "html": "<p>A leak from the bottom of the tank itself almost always means the tank has rusted through, and it must be replaced. A leak from a valve, pipe or fitting near the bottom is often a repair that costs much less.</p><p>Last month in Mount Pleasant we found water under a 1998 tank. The drain valve was dry; the rust was at the seam.</p>"
+        "html": "<p>A leak from the bottom of the tank itself almost always means the tank has rusted through, and it must be replaced. A leak from a valve, pipe or fitting near the bottom is often a repair that costs much less.</p><p>In September in Mount Pleasant we found water under a 1998 tank. The drain valve was dry; the rust was at the seam.</p>"
       },
       {
         "type": "images",
@@ -74,7 +74,7 @@ approves. A new post needs `title`, `publishedAt` and `updatedAt`.
           {
             "src": "https://harborplumbing.com/images/jobs/job-2026-09-mtp-water-heater-1.jpg",
             "alt": "Rusted seam at the base of a 1998 water heater tank, the source of the leak",
-            "caption": "The tank seam on a Mount Pleasant job, October 2026"
+            "caption": "The tank seam on a Mount Pleasant job, September 2026"
           }
         ]
       },

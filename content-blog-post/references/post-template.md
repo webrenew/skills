@@ -12,7 +12,7 @@ it must be replaced. A leak from a valve, pipe or fitting near the bottom is oft
 that costs much less. Check where the water starts before you decide.
 
 [Experience line + real photo]
-Last month in Mount Pleasant we found water under a 1998 tank. The drain valve was dry; the
+In September in Mount Pleasant we found water under a 1998 tank. The drain valve was dry; the
 rust was at the seam (photo below). That tank could not be repaired.
   [Photo: Rusted seam at the base of a 1998 water heater tank, the source of the leak]
 

@@ -6,7 +6,7 @@ The owner approves on a phone, in under a minute. Show only what the owner must 
 APPROVE A POST · Harbor Plumbing
 "Water heater leaking from the bottom? What it means"
 Draft v3 · 1,040 words · 3 photos · by Sam Harbor
-Read it: https://harborplumbing.com/drafts/water-heater-leaking-from-bottom
+Read it: https://docs.google.com/document/d/<shared-draft-id> (the full text, v3)
 
 Please confirm (only you know these):
 1. "Most repairs are done in one visit." True for water heaters?

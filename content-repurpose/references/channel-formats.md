@@ -14,7 +14,7 @@ repurpose one post: "Water heater leaking from the bottom? What it means" by Har
 ```
 Water on the floor under your water heater? Check where it starts before you decide.
 A leak from the tank itself means replacement. A leak from a valve is often a repair.
-Repairs from $149. Last month in Mount Pleasant, the rust was at the tank seam. Our post shows
+Repairs from $149. In September in Mount Pleasant, the rust was at the tank seam. Our post shows
 how to find the source in 10 minutes.
 [Photo: rusted tank seam] [Learn more → /blog/water-heater-leaking-from-bottom?utm_source=google&utm_medium=organic&utm_campaign=gbp&utm_content=water-heater-leaking-from-bottom]
 ```
