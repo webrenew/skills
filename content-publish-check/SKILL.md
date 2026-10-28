@@ -28,7 +28,7 @@ Read the draft line by line. Put every checkable claim in the ledger.
 
 | # | Claim (as written) | Type | Source | Status |
 |---|---|---|---|---|
-| 1 | "Repairs start from $149" | price | `priceGuide` of the `water-heater` entry in `businessProfile.services` | verified |
+| 1 | "Repairs from $149" | price | `priceGuide` of the `water-heater` entry in `businessProfile.services` | verified |
 | 2 | "Most tanks last 8 to 12 years" | outside fact | Manufacturer guide, link and year | verified |
 | 3 | "We are the most trusted plumber in Charleston" | superlative | none | cut |
 | 4 | "Done in one visit" | timing | Claim limits: "most repairs in one visit" | soften to "most repairs" |

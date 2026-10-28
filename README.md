@@ -57,9 +57,8 @@ it with real work, and brings leads. A person approves everything before it goes
 
 Start with `content-voice-and-proof`: the other six load its content kit. The skills reuse the
 business identity and profile from `launch-local-seo` and `launch-lead-triage-agent`, and
-check copy with `asd-ste100-writing`, so the command below installs those three as well. Other
-skills they mention (`launch-speed-to-lead`, `vercel-marketing-analytics`, `seo-technical`) are
-optional companions.
+check copy with `asd-ste100-writing`, so the command below installs those three as well. The
+other Launch and web skills named in each skill's "Related skills" are optional companions.
 
 Install the content skills:
 

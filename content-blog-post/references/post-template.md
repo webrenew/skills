@@ -19,6 +19,8 @@ rust was at the seam (photo below). That tank could not be repaired.
 H2: How do I find where the leak starts?
 [One-sentence answer.] Dry the tank and the floor, then watch for 10 minutes.
 1. Turn off the power (electric) or set the gas valve to "pilot" (gas).
+   [Shutting the unit off at its own control valve is a safe owner step. Anything at the gas
+   line or the venting is work for a licensed plumber; the post says so and stops there.]
 2. Dry the base of the tank and the floor with a towel.
 3. Look at the drain valve, the pressure relief pipe and the pipes on top.
 4. Note where the first drop appears.
@@ -30,7 +32,7 @@ H2: Which leaks can be repaired?
 - Pipe fittings on top: water runs down and looks like a bottom leak.
 
 H2: How much does it cost?
-[Only from the claim limits.] Repairs start from $149. A replacement is quoted on site,
+[Only from the claim limits, word for word.] Repairs from $149. A replacement is quoted on site,
 because the price depends on the tank size, fuel type and access.
 
 H2: When should I call a plumber?
