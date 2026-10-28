@@ -123,7 +123,8 @@ export interface Lead {
   ownerAlertClaimedAt: Date | null  // set just before the owner alert is sent
   ownerAlertedAt: Date | null       // set after the owner alert (plain or triage card) is sent
   ownerReAlertedAt: Date | null     // set after the one 30-minute reminder
-  agencyAlertedAt: Date | null      // set when a lead stuck for 24 hours is reported to the agency
+  agencyAlertClaimedAt: Date | null // set just before a stuck lead is reported to the agency
+  agencyAlertedAt: Date | null      // set after a lead stuck for 24 hours is reported to the agency
   repliedAt: Date | null        // set when the lead replies by email or text
   unsubscribedAt: Date | null
   unsubscribeToken: string      // random, unguessable
@@ -159,7 +160,7 @@ The helpers that other skills call, and what each must do:
 | Helper | Does |
 |---|---|
 | `getLead(id)` | Returns the `Lead`, or `null`. |
-| `createLead(input, { isTest, trap })` | Stores the lead and returns the id. `trap` is `"honeypot"` (status `spam`, `spamReason` `honeypot`), `"too-fast"` (status `new`, `possibleSpam` true) or `null`. Sets `consentAt` to the current time when `marketingConsent` is true, else null. The request never supplies `consentAt`. |
+| `createLead(input, { isTest, trap })` | `input` is the parsed `leadInputSchema` output, so an empty email, phone or town is already `null`. Stores the lead and returns the id. `trap` is `"honeypot"` (status `spam`, `spamReason` `honeypot`), `"too-fast"` (status `new`, `possibleSpam` true) or `null`. Sets `consentAt` to the current time when `marketingConsent` is true, else null. The request never supplies `consentAt`. |
 | `confirmNotSpam(id)` | The owner's "Not spam" tap: clears `possibleSpam` where it is set, and only then starts `lead-follow-up` with the same global key that `lead-intake` uses. |
 | `setStatus(id, to, { from })` | Conditional status change per the rules above. Returns whether it changed. |
 | `claimOwnerAlert(id)` | Atomically sets `ownerAlertClaimedAt` where it is null, or older than 3 minutes with no `ownerAlertedAt` (a crashed send). Returns whether this caller won the claim. |
@@ -169,7 +170,10 @@ The helpers that other skills call, and what each must do:
 | `deliverOwnerAlert(lead, triage)` | Sends the triage card, or the plain alert when `triage` is null, on the owner's channel (email, SMS or Slack); test leads go to the test inbox. A `possibleSpam` lead is labelled "Possible spam", with "Not spam" (`confirmNotSpam`) and "Spam" (`setStatus(id, "spam", ...)`) actions. Throws on failure. |
 | `unsubscribeByToken(token)` | Sets `unsubscribedAt` where `unsubscribeToken` matches and `unsubscribedAt` is null. See `launch-speed-to-lead`. |
 | `sendOwnerReminder(lead)` | In business hours only: sends the one reminder (or alerts a second person), then sets `ownerReAlertedAt`. |
-| `alertAgency(leads)` | For each lead, claims `agencyAlertedAt` (set where null) and only then reports it to the agency, so each stuck lead is reported once. |
+| `claimAgencyAlert(id)` | Atomically sets `agencyAlertClaimedAt` where it is null, or older than 3 minutes with no `agencyAlertedAt` (a crashed send). Returns whether this caller won the claim. |
+| `releaseAgencyAlert(id)`, `markAgencyAlerted(id)` | Clear the claim after a failed report; set `agencyAlertedAt` after a successful one. |
+| `deliverAgencyAlert(lead)` | Reports one stuck lead to the agency's support channel. Throws on failure. |
+| `alertAgency(leads)` | Reports each lead once: claim, deliver, mark. A failed report releases its claim, so the next sweep tries again. Returns how many failed. |
 | `recordStepSent(id, step)` | Adds `step` to `sentSteps` (atomic append, no duplicates). |
 | `markLeadBooked`, `markBookingRescheduled`, `markBookingCancelled` | See `launch-booking-payments`. |
 | `nextBusinessMorning(from, businessDays)` | The next opening time after `businessDays` working days, in the business's time zone. |
@@ -258,13 +262,14 @@ a Vercel WAF rule), you can rely on that and remove the call. Show `message` abo
 // lib/leads.ts (input schema)
 export const leadInputSchema = z.object({
   name: z.string().trim().min(1).max(100),
-  email: z.email().optional().or(z.literal("")),
-  phone: z.string().trim().max(30).optional(),
+  // Empty fields become null, so the stored Lead matches its `string | null` types.
+  email: z.union([z.email(), z.literal("")]).optional().transform((value) => value || null),
+  phone: z.string().trim().max(30).optional().transform((value) => value || null),
   need: z.string().trim().min(1).max(2000),
-  town: z.string().trim().max(100).optional(),
+  town: z.string().trim().max(100).optional().transform((value) => value || null),
   marketingConsent: z.boolean(),
   utm: z.record(z.string(), z.string().max(200)).optional(),
-}).refine((lead) => lead.email || lead.phone, {
+}).refine((lead) => lead.email || lead.phone, {   // runs after the transforms: null, not ""
   message: "Add an email or a phone number.",
   path: ["email"],   // a refine without a path lands in formErrors, which the form does not show
 })
@@ -302,7 +307,10 @@ export async function startLeadIntake(leadId: string) {
 
 ```ts
 // lib/owner-alerts.ts
-import { claimOwnerAlert, markOwnerAlerted, releaseOwnerAlert, type Lead } from "@/lib/leads"
+import {
+  claimAgencyAlert, claimOwnerAlert, deliverAgencyAlert, deliverOwnerAlert,
+  markAgencyAlerted, markOwnerAlerted, releaseAgencyAlert, releaseOwnerAlert, type Lead,
+} from "@/lib/leads"
 import type { PreparedTriage } from "@/lib/lead-triage-run"
 
 /**
@@ -320,6 +328,28 @@ export async function sendOwnerAlert(lead: Lead, triage: PreparedTriage | null) 
   }
   await markOwnerAlerted(lead.id)
   return "sent"
+}
+
+/**
+ * Reports each stuck lead to the agency once, with the same claim pattern. A failed report
+ * releases its claim and the loop goes on, so one bad lead cannot block the others, and the
+ * next sweep tries it again.
+ */
+export async function alertAgency(leads: Lead[]): Promise<{ failed: number }> {
+  let failed = 0
+  for (const lead of leads) {
+    if (!(await claimAgencyAlert(lead.id))) continue
+    try {
+      await deliverAgencyAlert(lead)
+    } catch (error) {
+      await releaseAgencyAlert(lead.id)
+      failed += 1
+      console.error("agency alert failed, next sweep retries", lead.id, error)
+      continue
+    }
+    await markAgencyAlerted(lead.id)
+  }
+  return { failed }
 }
 ```
 
@@ -380,8 +410,9 @@ export const leadIntake = schemaTask({
 /**
  * Safety net, every 10 minutes:
  * - restart intake for a lead whose alert never went out (up to 24 hours old);
- * - report every lead older than that to the agency once (`alertAgency` claims
- *   `agencyAlertedAt`), with no upper age, so a sweeper outage cannot skip a lead;
+ * - report every lead older than that to the agency once (`alertAgency` claims each lead,
+ *   and releases the claim when the report fails, so the next sweep retries it), with no
+ *   upper age, so a sweeper outage cannot skip a lead;
  * - send the one 30-minute reminder for real leads still waiting.
  *
  * The restart uses its own key per 10-minute window. Reusing `lead-intake:${id}` would return
@@ -402,11 +433,11 @@ export const leadIntakeSweeper = schedules.task({
         }),
       })
     }
-    await alertAgency(await listUnalertedLeads({ olderThanMinutes: 24 * 60, notReportedToAgency: true }))
+    const agency = await alertAgency(await listUnalertedLeads({ olderThanMinutes: 24 * 60, notReportedToAgency: true }))
 
     const waiting = await listLeadsToReAlert()
     for (const lead of waiting) await sendOwnerReminder(lead)   // sets ownerReAlertedAt; business hours only
-    return { restarted: stuck.length, reminded: waiting.length }
+    return { restarted: stuck.length, agencyFailed: agency.failed, reminded: waiting.length }
   },
 })
 ```
@@ -428,7 +459,7 @@ that runs the same pipeline:
 // app/api/leads/test/route.ts
 import { timingSafeEqual } from "node:crypto"
 
-import { createLead } from "@/lib/leads"
+import { createLead, leadInputSchema } from "@/lib/leads"
 import { startLeadIntake } from "@/lib/lead-intake"
 
 function authorized(header: string | null, secret: string) {
@@ -445,7 +476,7 @@ export async function POST(request: Request) {
   if (!secret || !inbox) return new Response("test route not configured", { status: 503 })
   if (!authorized(request.headers.get("x-lead-test-secret"), secret)) return new Response("forbidden", { status: 403 })
   const id = await createLead(
-    { name: "Health check", email: inbox, need: "Automated form test", marketingConsent: false },
+    leadInputSchema.parse({ name: "Health check", email: inbox, need: "Automated form test", marketingConsent: false }),
     { isTest: true, trap: null },
   )
   await startLeadIntake(id)

@@ -23,7 +23,7 @@ never. This job finds out first.
 | Check | How | Alert at once when |
 |---|---|---|
 | Site is up | `GET` the home page and main landing page | Status is not 200, or the response takes over 10 s |
-| Form delivers | Call the test entry point, then confirm the lead was stored and `ownerAlertedAt` is set | Not stored, or no alert after 5 minutes. A 503 from the test route is a configuration error (`LEAD_TEST_SECRET` or `LEAD_TEST_INBOX` unset): alert the agency, and do not tell the owner the form is broken. |
+| Form delivers | Call the test entry point, then confirm the lead was stored and `ownerAlertedAt` is set | Not stored, or no alert after 5 minutes. A 503 from the test route (`LEAD_TEST_SECRET` or `LEAD_TEST_INBOX` unset), or a site that is not `business.url`, is a configuration error: alert the agency, and do not tell the owner the form is broken. |
 | Certificate | Read the TLS certificate and its expiry | Not valid for the hostname, or under 14 days left |
 | Domain | Expiry date from RDAP (auto-renew status is only in the registrar's account) | Under 30 days left |
 | Broken links | Fetch every URL in `sitemap.xml` and internal links on key pages | A page in the sitemap returns 4xx or 5xx |
@@ -133,11 +133,15 @@ stored, the alert goes to the test inbox, and no customer follow-up starts.
 // lib/site-health/form-test.ts (runs inside the scheduled task)
 import { wait } from "@trigger.dev/sdk"
 
+import { business } from "@/lib/business"                 // launch-local-seo
 import { getLead } from "@/lib/leads"
 
 export type FormTestResult = "delivered" | "not-delivered" | "not-configured"
 
 export async function formDelivers(site: string): Promise<FormTestResult> {
+  // The secret goes only to the business's own site. A wrong site setting is a configuration
+  // error, never a reason to post the secret elsewhere.
+  if (new URL(site).origin !== new URL(business.url).origin) return "not-configured"
   const response = await fetch(`${site}/api/leads/test`, {
     method: "POST",
     headers: { "x-lead-test-secret": process.env.LEAD_TEST_SECRET ?? "" },

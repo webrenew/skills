@@ -45,8 +45,21 @@ Cal.com signs the raw body with the webhook secret (HMAC SHA-256, hex) in the
 ```ts
 // app/api/webhooks/cal/route.ts
 import { createHmac, timingSafeEqual } from "node:crypto"
+import { z } from "zod"
 
 import { markBookingCancelled, markBookingRescheduled, markLeadBooked } from "@/lib/leads"
+
+// Only the fields this route uses. Unknown fields are ignored.
+const calEvent = z.object({
+  triggerEvent: z.string(),
+  payload: z.object({
+    uid: z.string().min(1),
+    rescheduleUid: z.string().min(1).optional(),
+    startTime: z.string().optional(),
+    attendees: z.array(z.object({ email: z.string() })).default([]),
+    metadata: z.object({ leadId: z.string().optional() }).optional(),
+  }),
+})
 
 function verify(rawBody: string, signature: string | null, secret: string | undefined) {
   if (!secret || !signature) return false
@@ -61,18 +74,32 @@ export async function POST(request: Request) {
     return new Response("invalid signature", { status: 401 })
   }
 
-  const { triggerEvent, payload } = JSON.parse(rawBody)
+  // A signed body that does not parse never will. Answer 400, so Cal does not retry it forever.
+  let body: unknown
+  try {
+    body = JSON.parse(rawBody)
+  } catch {
+    return new Response("invalid json", { status: 400 })
+  }
+  const event = calEvent.safeParse(body)
+  if (!event.success) return new Response("unexpected payload", { status: 400 })
+
+  const { triggerEvent, payload } = event.data
   const booking = {
     bookingUid: payload.uid,                     // stable across Cal's retries: the idempotency key
-    email: payload.attendees?.[0]?.email,
+    email: payload.attendees[0]?.email,
     startTime: payload.startTime,
     leadId: payload.metadata?.leadId,
   }
 
   if (triggerEvent === "BOOKING_CREATED") await markLeadBooked(booking)
   if (triggerEvent === "BOOKING_RESCHEDULED") {
-    // Cal creates a new booking: `uid` is new, `rescheduleUid` is the one it replaces.
-    await markBookingRescheduled({ ...booking, previousBookingUid: payload.rescheduleUid })
+    // Cal creates a new booking: `uid` is new, `rescheduleUid` is the one it replaces. When no
+    // lead holds the old booking, treat the new one as a fresh booking, so it is never lost.
+    const moved = payload.rescheduleUid
+      ? await markBookingRescheduled({ ...booking, previousBookingUid: payload.rescheduleUid })
+      : false
+    if (!moved) await markLeadBooked(booking)
   }
   if (triggerEvent === "BOOKING_CANCELLED") await markBookingCancelled(booking)
   return new Response("ok")
@@ -84,7 +111,7 @@ What each helper does to the shared lead (see `launch-lead-capture`, section 5):
 | Helper | Lead change |
 |---|---|
 | `markLeadBooked` | Find the lead by `leadId`, else by email (most recent open lead). Do nothing if this `bookingUid` is already stored. Store `bookingUid`, then `setStatus(id, "booked", { from: ["new", "contacted", "cancelled"] })`. That stops the follow-ups in `launch-speed-to-lead`. |
-| `markBookingRescheduled` | Find the lead whose `bookingUid` equals `previousBookingUid`. Store the new `bookingUid` and time. Status stays `booked`. |
+| `markBookingRescheduled` | Find the lead whose `bookingUid` equals `previousBookingUid`. Store the new `bookingUid` and time. Status stays `booked`. Returns false when no lead holds `previousBookingUid`; the route then calls `markLeadBooked` with the new booking (by `leadId`, else attendee email). |
 | `markBookingCancelled` | Only when the event's `uid` equals the lead's current `bookingUid`: `setStatus(id, "cancelled", { from: ["booked"] })`. Alert the owner once ("Dana cancelled Thursday's visit"), keyed on `bookingUid:cancelled`, because Cal retries. Follow-ups stay stopped; the owner decides whether to call. |
 
 ## 3. Payments with Stripe
@@ -101,6 +128,7 @@ import { redirect } from "next/navigation"
 import Stripe from "stripe"
 import { z } from "zod"
 
+import { business } from "@/lib/business"                 // launch-local-seo
 import { getLead } from "@/lib/leads"
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
@@ -121,8 +149,8 @@ export async function startCheckout(input: unknown) {
     line_items: [{ price: PRICES[product], quantity: 1 }],
     client_reference_id: leadId,
     metadata: { leadId, product },
-    success_url: "https://example.com/thanks?session_id={CHECKOUT_SESSION_ID}",
-    cancel_url: "https://example.com/pricing",
+    success_url: `${business.url}/thanks?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${business.url}/pricing`,
   })
   if (!session.url) throw new Error("Stripe returned no checkout URL")
   redirect(session.url)
