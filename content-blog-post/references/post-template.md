@@ -4,7 +4,7 @@ An outline with one worked example. Change the shape to fit the question; keep t
 answer, proof, steps, limits, action.
 
 ```
-H1: Water heater leaking from the bottom? Here is what it means
+H1: Water heater leaking from the bottom? What it means
 
 [Answer block, 40 to 60 words]
 A leak from the bottom of the tank itself almost always means the tank has rusted through, and

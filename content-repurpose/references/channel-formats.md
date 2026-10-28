@@ -35,7 +35,7 @@ How to check, with photos from a real job: [link with UTM]
 
 - Caption up to 2,200 characters; about 125 show before "more".
 - Links in captions do not click. Use the link in bio or a story link sticker.
-- Carousel up to 10 images, 4:5 (1080 x 1350) shows largest in the feed.
+- Carousel up to 20 photos and videos; 4:5 (1080 x 1350) shows largest in the feed.
 - Alt text on each image (Advanced settings).
 
 ```

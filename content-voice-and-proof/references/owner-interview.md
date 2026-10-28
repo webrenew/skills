@@ -25,6 +25,7 @@ already answer.
 ## After the interview
 
 - Read the answers back as a short summary and ask the owner to correct it.
-- Mark each unanswered item `TODO: ask owner` in the kit. Never fill it with a guess.
+- Leave each unanswered field empty and add it to the owner to-do list. Never fill it with a
+  guess, and never put placeholder text where a post could quote it.
 - Ask for consent in writing before any customer's name, face, home or words appear in a
   post. `content-case-study/references/consent-template.md` has a short form.

@@ -53,8 +53,9 @@ export const contentKit = {
   claimLimits: {
     prices: "Use only businessProfile.services[].priceGuide, as written.",
     timing: { may: ["Most repairs are done in one visit"], mayNot: ["same-day", "within the hour"] },
-    licences: [{ name: "SC Master Plumber", number: "TODO: ask owner", lookupUrl: "TODO" }],
-    guarantee: "TODO: ask owner for the written wording",
+    // Empty until the owner confirms: never a placeholder a post could quote.
+    licences: [] as { name: string; number: string; lookupUrl: string }[],
+    guarantee: null as string | null,   // the exact written wording
     regulated: [],                // e.g. "gas lines: permit required, no DIY steps"
   },
   authors: [
@@ -63,7 +64,7 @@ export const contentKit = {
       name: "Sam Harbor",
       role: "Owner and master plumber",
       yearsInTrade: 18,
-      bio: "TODO: 40 to 60 words in Sam's voice",
+      bio: "",                              // 40 to 60 words in Sam's voice; empty until approved
       photo: "/images/team/sam.jpg",
       url: `${business.url}/about/sam-harbor`,
     },

@@ -90,8 +90,9 @@ This is a spot check, not a ranking report. Answers change by person, place and 
 4. Update internal links to point straight to the stronger URL.
 5. Remove the old URLs from the sitemap.
 
-On Launch sites, save the merged post with `write_post`, then `delete_post` the old one and
-add the redirect. Both keep earlier versions: `post_history` lists the last 10, and
+On Launch sites, save the merged post with `write_post`, add the 308 redirect, and only then
+`delete_post` the old one, so the old URL never returns a 404. Both post tools keep earlier
+versions: `post_history` lists the last 10, and
 `restore_post` undoes an overwrite or a delete.
 
 ## 6. The monthly owner report

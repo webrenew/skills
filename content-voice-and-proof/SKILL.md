@@ -45,7 +45,9 @@ fill the voice, readers, places, claim limits and authors. Do not ask what the s
 business profile or the reviews already answer.
 
 If the owner has no time, ask the five questions marked **core** and fill the rest later.
-Never fill a gap with a guess. Mark it `TODO: ask owner` in the kit.
+Never fill a gap with a guess. Leave the field empty and put the question on the owner
+to-do list. A post that needs an empty field (a licence number, the guarantee, a bio) cannot
+pass `content-publish-check` until the owner fills it.
 
 ## 2. Take the voice from the owner's own writing
 

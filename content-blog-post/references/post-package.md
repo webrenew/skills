@@ -12,7 +12,7 @@ template has no JSON-LD yet, add it once to the template.
 {
   "@context": "https://schema.org",
   "@type": "BlogPosting",
-  "headline": "Water heater leaking from the bottom? Here is what it means",
+  "headline": "Water heater leaking from the bottom? What it means",
   "description": "A leak from the tank means replacement; a leak from a valve is often a cheap repair. How to tell which one you have, from a Charleston plumber.",
   "image": ["https://harborplumbing.com/images/blog/water-heater-leak-cover.jpg"],
   "datePublished": "2026-11-04",
@@ -33,7 +33,8 @@ template has no JSON-LD yet, add it once to the template.
 }
 ```
 
-- `headline` matches the H1. `description` matches the meta description.
+- `headline` matches the H1. On a Launch post the H1 is the post `title`, so `headline`
+  equals `title`. `description` matches the meta description.
 - `dateModified` changes only when the content changes in a real way (see `content-refresh`).
 - In Next.js, escape `<` in the JSON (`.replace(/</g, "\\u003c")`), as `launch-local-seo` does.
 - Validate with the Rich Results Test before the first post goes live.
@@ -95,8 +96,7 @@ approves. A new post needs `title`, `publishedAt` and `updatedAt`.
 
 ```markdown
 ---
-title: "Water heater leaking from the bottom? Here is what it means"
-seoTitle: "Water heater leaking from the bottom? What it means"
+title: "Water heater leaking from the bottom? What it means"
 description: "A leak from the tank means replacement; a leak from a valve is often a cheap repair. How to tell which one you have, from a Charleston plumber."
 slug: water-heater-leaking-from-bottom
 category: water-heaters
@@ -109,5 +109,6 @@ draft: true
 ---
 ```
 
-Match the field names the site's blog already reads. Keep `draft: true` until the owner
-approves.
+Match the field names the site's blog already reads. Add a separate `seoTitle` only when the
+blog template reads one and the H1 is longer than 60 characters. Keep `draft: true` until the
+owner approves.
