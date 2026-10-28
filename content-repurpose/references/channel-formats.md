@@ -82,8 +82,8 @@ replacement: [link with UTM]
 ## Service-page FAQ
 
 - Add the question and the post's answer block (40 to 60 words) to the hub service page's FAQ.
-- Link to the post for the full answer. Use FAQ markup only if the page already shows
-  visible Q&A with matching text.
+- Link to the post for the full answer. The visible Q&A is what helps; Google no longer shows
+  FAQ rich results (since May 2026), so add no markup for display.
 
 ## Email
 

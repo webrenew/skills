@@ -96,7 +96,7 @@ One pass per concern. A pass that tries to fix everything fixes nothing.
 | Slug | Lowercase, hyphens, short, no date, new (not already used) |
 | Internal links | One link to the hub service page in the body; 1 to 3 related posts; descriptive anchors |
 | Alt text | Every image; says what it shows; under 125 characters |
-| Schema | Valid `BlogPosting` with a real author and dates; FAQ markup only for visible Q&A; no self-serving review markup |
+| Schema | Valid `BlogPosting` with a real author and dates; any `FAQPage` markup matches visible Q&A word for word; no self-serving review markup |
 | Duplicate | No existing post answers the same question (`list_posts` or the sitemap) |
 | Thin or city-swap | Not a copy of another post with the town or service name changed |
 | Indexable | No `noindex`; canonical points to itself; in the sitemap after publish |

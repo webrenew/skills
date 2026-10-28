@@ -89,14 +89,14 @@ Every scheduled topic names its **first-hand asset** in the plan: "photos from j
 
 ## 6. Set a cadence the owner can keep
 
-Ask how many hours a month the owner can give: about 30 minutes per post for the interview and
-approval, plus photos.
+Ask how many hours a month the owner can give: about 45 to 60 minutes per post or case study,
+for the interview, photos and approval, and about 30 minutes per refresh.
 
 | Owner time per month | Cadence |
 |---|---|
 | 1 hour | 1 post |
-| 2 hours | 2 posts + 1 case study (`content-case-study`) |
-| 4 hours | 4 posts + 1 case study + 1 refresh (`content-refresh`) |
+| 3 hours | 2 posts + 1 case study (`content-case-study`) |
+| 5 to 6 hours | 4 posts + 1 case study + 1 refresh (`content-refresh`) |
 
 Never schedule more than the owner can approve. A post waits for approval; it never goes out
 on silence (see `content-publish-check`). Put seasonal topics 4 to 6 weeks before the season.

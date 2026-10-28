@@ -117,8 +117,9 @@ Use `references/post-template.md` for a full outline with an example.
 | Author | A real person from the kit's `authors` |
 | Schema | `BlogPosting` JSON-LD with the real author, dates and cover image |
 
-- FAQ markup only for questions and answers that are visible on the page, word for word.
-  Google shows FAQ rich results for very few sites now; add it only if it is true to the page.
+- No FAQ rich results: Google stopped showing them on 7 May 2026. Visible questions and
+  answers on the page still help readers and AI answers. `FAQPage` markup, if the template
+  already has it, must match the visible text word for word; do not add it for display.
 - Never `Review` or `AggregateRating` markup for the business's own reviews. Google does not
   show stars for self-serving reviews, and fake or selected markup breaks its policies.
 

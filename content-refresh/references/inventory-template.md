@@ -31,8 +31,8 @@
 
 | Signal | Likely decision |
 |---|---|
-| Leads or calls > 0 | Keep or refresh, never remove |
+| Leads or calls > 0 | Keep or refresh, never remove. This row wins over every other row. |
 | Clicks down > 30 % and position down | Refresh |
 | Two posts share their top query | Merge into the one with more leads |
-| Not indexed, no leads, no links, 12+ months old | Remove with a redirect |
+| Not indexed, no leads, no calls, no links, 12+ months old | Remove with a redirect |
 | Facts out of date (prices, years, models, rules) | Refresh, whatever the traffic |

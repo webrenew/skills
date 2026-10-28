@@ -39,11 +39,12 @@ template has no JSON-LD yet, add it once to the template.
 - In Next.js, escape `<` in the JSON (`.replace(/</g, "\\u003c")`), as `launch-local-seo` does.
 - Validate with the Rich Results Test before the first post goes live.
 
-## FAQ markup (optional)
+## FAQ markup
 
-Only for questions and answers that are on the page, word for word. Use `FAQPage` with one
-`Question` per visible H2 question, and the section's first sentence or full answer as the
-`acceptedAnswer`. Leave it out when in doubt; it does not help the post rank.
+Google stopped showing FAQ rich results on 7 May 2026, so `FAQPage` markup gives no display in
+Search. What helps is the visible Q&A itself: H2 questions with a one-sentence answer. If a
+template already outputs `FAQPage`, it must match the visible questions and answers word for
+word. Do not add it to new posts for display.
 
 ## Launch: `write_post`
 
@@ -73,7 +74,7 @@ approves. A new post needs `title`, `publishedAt` and `updatedAt`.
           {
             "src": "https://harborplumbing.com/images/jobs/job-2026-09-mtp-water-heater-1.jpg",
             "alt": "Rusted seam at the base of a 1998 water heater tank, the source of the leak",
-            "caption": "The tank seam on a Mount Pleasant job, September 2026"
+            "caption": "The tank seam on a Mount Pleasant job, October 2026"
           }
         ]
       },
