@@ -95,5 +95,7 @@ Write the proof bank as a table with the same columns as `ProofEntry`.
 | quote-dana-r | quote | "They showed me the old part and explained why it failed." | Summerville | 2026-08-02 | Google review link | written 2026-08-05 | |
 | cred-master-plumber | credential | SC Master Plumber licence | | 2026-01-01 | State licence lookup link | not-needed | 2026-12-31 |
 
-`useUntil` is optional. Leave it empty for facts that do not go stale (a finished job, a
+Photos live in the site's media storage, named with the entry `id`
+(`job-2026-09-mtp-water-heater-1.jpg`). In the Markdown table, add a `photos` column with each
+file name and its alt text, or leave it empty when the entry has none. `useUntil` is optional. Leave it empty for facts that do not go stale (a finished job, a
 quote); set it for prices, counts and licences, which need a check on that date.

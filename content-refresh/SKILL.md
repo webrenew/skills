@@ -86,7 +86,9 @@ This is a spot check, not a ranking report. Answers change by person, place and 
 ## 5. Merge and redirect
 
 1. Pick the stronger URL: more leads first, then more links, then more clicks.
-2. Move unique sections, proof and photos into it. Do not paste whole posts.
+2. Move unique sections, proof and photos into it. Do not paste whole posts. Run
+   `content-publish-check` on the merged text and get the owner's approval card for the
+   merge and each removal before any write, redirect or delete.
 3. Add a 308 permanent redirect from each old URL to the stronger one (Next.js `redirects()`
    with `permanent: true`, or the host's redirect settings).
 4. Update internal links to point straight to the stronger URL.
