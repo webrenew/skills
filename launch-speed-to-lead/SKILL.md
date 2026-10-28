@@ -35,7 +35,10 @@ hand-typed if it is not.
 
 ## Stop conditions
 
-Check all of these before **every** send, not only at the start:
+Check all of these before **every** follow-up, not only at the start. The confirmation ("we
+got your request") answers the customer's own request, so it needs no marketing consent and
+goes out even after a reply. It still stops for spam, an unsubscribe, a test lead and a lead
+marked `possibleSpam`.
 
 - The lead replied (`repliedAt` is set).
 - The status is no longer `new`: the owner contacted them, they booked (see
@@ -107,6 +110,8 @@ export const leadFollowUp = schemaTask({
     if (!first?.email || first.isTest || first.possibleSpam) return { sent: [] }
 
     // A retry starts run() again from the top. `sentSteps` makes every step run once.
+    // `first` is read fresh on every attempt, so a retry sees a lead marked spam since.
+    if (first.status === "spam" || first.unsubscribedAt) return { sent: [] }
     if (!first.sentSteps.includes("confirmation")) {
       await sendEmail({ from: FROM, to: first.email, subject: "We got your request", react: confirmationEmail(first) }, `${leadId}:confirmation`)
       await recordStepSent(leadId, "confirmation")

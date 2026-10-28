@@ -246,7 +246,6 @@ export async function submitLead(input: unknown) {
 database. In a Route Handler, `ipAddress(request)` from `@vercel/functions` gives the same
 address; a Server Action has no `Request`, so it reads the header. If the platform firewall already rate-limits POSTs to the form's page (for example
 a Vercel WAF rule), you can rely on that and remove the call. Show `message` above the form.
-```
 
 ```ts
 // lib/leads.ts (input schema)

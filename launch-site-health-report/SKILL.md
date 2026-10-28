@@ -75,7 +75,7 @@ service (Vercel, Better Stack, UptimeRobot, Checkly) and keep this job for the d
 import tls from "node:tls"
 
 interface CertificateCheck {
-  daysLeft: number
+  daysLeft: number | null    // null when the server sent no certificate
   valid: boolean             // false for expired, self-signed or wrong-hostname certificates
   problem: string | null     // e.g. "CERT_HAS_EXPIRED", "ERR_TLS_CERT_ALTNAME_INVALID"
 }
@@ -85,10 +85,12 @@ export function checkCertificate(host: string): Promise<CertificateCheck> {
     // rejectUnauthorized: false so a bad certificate is reported, not thrown. We only read
     // the certificate; no data is sent over this socket.
     const socket = tls.connect({ host, port: 443, servername: host, rejectUnauthorized: false }, () => {
-      const validTo = new Date(socket.getPeerCertificate().valid_to)
+      const validTo = socket.getPeerCertificate().valid_to as string | undefined   // {} when there is none
+      const expiresAt = validTo ? new Date(validTo).getTime() : Number.NaN
+      const daysLeft = Number.isNaN(expiresAt) ? null : Math.floor((expiresAt - Date.now()) / 86_400_000)
       const problem = socket.authorized ? null : String(socket.authorizationError ?? "UNTRUSTED")
       socket.end()
-      resolve({ daysLeft: Math.floor((validTo.getTime() - Date.now()) / 86_400_000), valid: socket.authorized, problem })
+      resolve({ daysLeft, valid: socket.authorized && daysLeft !== null, problem: problem ?? (daysLeft === null ? "NO_CERTIFICATE" : null) })
     })
     socket.setTimeout(10_000, () => socket.destroy(new Error("TLS timeout")))
     socket.on("error", reject)
@@ -110,7 +112,8 @@ export async function fieldVitals(origin: string) {
   return {
     lcp: record.metrics.largest_contentful_paint?.percentiles.p75,
     inp: record.metrics.interaction_to_next_paint?.percentiles.p75,
-    cls: Number(record.metrics.cumulative_layout_shift?.percentiles.p75),   // CrUX returns CLS as a string
+    // CrUX returns CLS as a string, and leaves a metric out when it has too little data.
+    cls: record.metrics.cumulative_layout_shift ? Number(record.metrics.cumulative_layout_shift.percentiles.p75) : undefined,
   }
 }
 ```
