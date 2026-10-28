@@ -95,7 +95,7 @@ The two traps are not equally sure:
   until the owner taps "Not spam". Validation errors show as usual, because the sender may be
   a person.
 
-## 5. The lead model (shared by the whole Launch pack)
+## 5. The lead model (shared by all Launch skills)
 
 Every Launch skill reads and writes the same lead record. Create it once, in the project's
 database, with these fields and statuses. Other skills refer to them by these names.

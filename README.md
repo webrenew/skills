@@ -15,14 +15,6 @@ We partner with [Vercel](https://vercel.com), [Blackbox.ai](https://blackbox.ai)
 | [asd-ste100-writing](./asd-ste100-writing) | Clear product copy with ASD-STE100 Simplified Technical English and benefit-first framing |
 | [dependabot-batch](./dependabot-batch) | Collapse many open Dependabot PRs into one branch and one PR — manifest edits, single lockfile regeneration, gates, held-back bumps |
 | [overscroll-behavior](./overscroll-behavior) | Stop the desktop rubber-band bounce and keep mobile pull-to-refresh — `overscroll-behavior: none` gated behind `(pointer: fine)`, `contain` for nested scrollers |
-
-## Launch pack
-
-Nine skills that help a small business get found, turn visits into leads, and follow up
-automatically, with a person in charge of anything an agent writes.
-
-| Skill | What it gives the business |
-|-------|----------------------------|
 | [launch-local-seo](./launch-local-seo) | Found in local search and the map pack: one business identity, LocalBusiness schema, service pages, Google Business Profile, reviews |
 | [launch-site-checklist](./launch-site-checklist) | A go-live check that catches the silent launch bugs: redirects, `noindex`, forms that deliver, analytics, ownership |
 | [launch-landing-page](./launch-landing-page) | One page, one offer, one action: structure, copy and design that turn visitors into calls and leads |
@@ -32,12 +24,6 @@ automatically, with a person in charge of anything an agent writes.
 | [launch-lead-triage-agent](./launch-lead-triage-agent) | An AI agent that sorts each lead and drafts a reply for the owner to approve from a phone |
 | [launch-site-health-report](./launch-site-health-report) | A weekly plain-English report and instant alerts when the site, form or certificate breaks |
 | [launch-agent-guardrails](./launch-agent-guardrails) | Rules for any customer-facing agent: approval, grounding, injection safety, limits, kill switch, evals |
-
-Install the pack:
-
-```bash
-npx skills add https://github.com/webrenew/skills --skill launch-local-seo launch-site-checklist launch-landing-page launch-lead-capture launch-speed-to-lead launch-booking-payments launch-lead-triage-agent launch-site-health-report launch-agent-guardrails
-```
 
 ## Content skills
 
@@ -57,7 +43,7 @@ it with real work, and brings leads. A person approves everything before it goes
 Start with `content-voice-and-proof`: the other six load its content kit. The skills reuse the
 business identity and profile from `launch-local-seo` and `launch-lead-triage-agent`, and
 check copy with `asd-ste100-writing`, so the command below installs those three as well. The
-other Launch and web skills named in each skill's "Related skills" are optional companions.
+other skills named in each skill's "Related skills" are optional companions.
 
 Install the content skills:
 
@@ -83,8 +69,8 @@ npx skills add https://github.com/webrenew/skills --skill google-analytics googl
 ```
 
 The three skills share one event map, so GA4, Google Ads and Meta count the same leads. Each
-names its Launch companions (landing page, lead capture, speed to lead, agent guardrails)
-under "Related skills"; they are optional and come with the Launch pack.
+names its companion skills (landing page, lead capture, speed to lead, agent guardrails)
+under "Related skills"; they are optional, and you can install each one on its own.
 
 ## Skill Structure
 
