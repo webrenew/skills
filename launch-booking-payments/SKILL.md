@@ -139,6 +139,9 @@ export async function POST(request: Request) {
 - The thank-you page shows "Payment received" only after it confirms the session server-side.
   It never fulfils anything.
 - Store the Checkout Session id with a unique constraint so Stripe's retries are harmless.
+- Bank debits and some local methods confirm later: `checkout.session.completed` arrives with
+  `payment_status: "unpaid"`, then `checkout.session.async_payment_succeeded` (or `_failed`).
+  Fulfil on the success event too if those methods are on.
 - Use test mode and test keys until launch. Switch keys and the webhook endpoint together.
 
 ## 4. Deposits and no-shows
