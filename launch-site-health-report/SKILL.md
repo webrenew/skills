@@ -157,7 +157,7 @@ Write it for the owner, not for a developer. Three numbers first, then only what
 attention.
 
 ```
-Subject: Harbor Plumbing site: all good · 14 leads this week (+3)
+Subject: Harbor Plumbing site: 2 broken links · 14 leads this week (+3)
 
 This week
 • 14 leads (last week 11). Top source: Google Business Profile (6).
@@ -172,7 +172,9 @@ Coming up
 • Domain expires on 3 March 2027. Check that auto-renew is on at the registrar.
 ```
 
-- When nothing needs attention, say so in the subject line. That is the best report.
+- The subject names the most important item that needs attention. When nothing needs
+  attention, say so: `Harbor Plumbing site: all good · 14 leads this week (+3)`. That is the
+  best report.
 - No charts the owner must interpret. Every issue says what it means for customers and
   what happens next.
 - Send from the agency or system address, with a reply address that a person reads.

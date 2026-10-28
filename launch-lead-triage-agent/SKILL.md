@@ -102,12 +102,25 @@ Rules:
 - Keep the reply under 120 words, in the profile's tone, with one clear next step
   (the booking link or a call).`
 
+const MAX_FIELD_LENGTH = 2000
+
+/** Customer text for the prompt: no enquiry tags, so it cannot close the block, and a length cap. */
+function enquiryField(value: string | null | undefined, fallback: string): string {
+  const text = (value ?? "").replace(/<\/?\s*enquiry\b[^>]*>/gi, "").trim().slice(0, MAX_FIELD_LENGTH)
+  return text || fallback
+}
+
 export async function triageLead(lead: Pick<Lead, "name" | "need" | "town">) {
+  const enquiry = [
+    `Name: ${enquiryField(lead.name, "not given")}`,
+    `Town: ${enquiryField(lead.town, "not given")}`,
+    `Message: ${enquiryField(lead.need, "empty")}`,
+  ].join("\n")
   const request = () =>
     generateText({
       model: TRIAGE_MODEL,
       system: SYSTEM,
-      prompt: `<enquiry>\nName: ${lead.name}\nTown: ${lead.town ?? "not given"}\nMessage: ${lead.need}\n</enquiry>`,
+      prompt: `<enquiry>\n${enquiry}\n</enquiry>`,
       output: Output.object({ schema: triageSchema }),
       maxRetries: 1,
     })
@@ -126,28 +139,49 @@ provider setup if it has one.
 ## 3. Checks in code, after the model
 
 Do not rely on the prompt alone. A "fact" counts only if it appears in the profile word for
-word, and any money, date or promise in the draft must come from such a fact.
+word. Every amount, day, time and promise in the draft must itself appear in one of those
+facts: "$89" fails when the facts say "$149", even though both are prices.
 
 ```ts
 const PROFILE_TEXT = JSON.stringify(businessProfile).toLowerCase()
-const MONEY = /[$€£]\s?\d|\d+\s?(dollars|usd)/i
-const DATE_OR_TIME = /\b(today|tomorrow|tonight|monday|tuesday|wednesday|thursday|friday|saturday|sunday|\d{1,2}(:\d{2})?\s?(am|pm))\b/i
-const PROMISE = /\b(guarantee|warranty|promise|always|never fail)\w*/i
+const MIN_FACT_LENGTH = 8   // "" or "$" would match any profile
+
+const CLAIMS = [
+  [/[$€£]\s?\d(?:[\d,.]*\d)?|\d(?:[\d,.]*\d)?\s?(?:dollars|usd)\b/gi, "ungrounded-price"],
+  [/\b(?:today|tomorrow|tonight|monday|tuesday|wednesday|thursday|friday|saturday|sunday|\d{1,2}(?::\d{2})?\s?(?:am|pm))\b/gi, "ungrounded-time"],
+  [/\b(?:guarantee|warranty|promise|always|never fail)\w*/gi, "ungrounded-promise"],
+] as const
+
+const normalize = (claim: string) => claim.toLowerCase().replace(/\s+/g, "")
+
+/** Each claim in the draft must be one of the claims in the grounded facts, token for token. */
+function findUngroundedClaim(draft: string, facts: string[]): string | null {
+  for (const [pattern, reason] of CLAIMS) {
+    const allowed = new Set(facts.flatMap((fact) => fact.match(pattern) ?? []).map(normalize))
+    const claims = draft.match(pattern) ?? []
+    if (claims.some((claim) => !allowed.has(normalize(claim)))) return reason
+  }
+  return null
+}
 
 export function needsOwnerReview(triage: Triage): string | null {
   if (triage.isSpam) return "possible-spam"
   if (triage.fit !== "good" || triage.inServiceArea === "no") return "fit"
   if (triage.missingInfo.length > 0) return "missing-info"
 
-  const grounded = triage.usedFacts.filter((fact) => PROFILE_TEXT.includes(fact.toLowerCase()))
-  if (grounded.length !== triage.usedFacts.length) return "invented-fact"
+  // A draft must rest on at least one real fact, and every fact must be in the profile.
+  const facts = triage.usedFacts.map((fact) => fact.trim())
+  if (facts.length === 0 || facts.some((fact) => fact.length < MIN_FACT_LENGTH)) return "invented-fact"
+  if (facts.some((fact) => !PROFILE_TEXT.includes(fact.toLowerCase()))) return "invented-fact"
 
-  for (const [pattern, reason] of [[MONEY, "ungrounded-price"], [DATE_OR_TIME, "ungrounded-time"], [PROMISE, "ungrounded-promise"]] as const) {
-    if (pattern.test(triage.draftReply) && !grounded.some((fact) => pattern.test(fact))) return reason
-  }
-  return null
+  return findUngroundedClaim(triage.draftReply, facts)
 }
 ```
+
+Relative days ("tomorrow") never appear in a profile, so a draft that offers one always goes
+to the owner. That is deliberate. A claim with no number, such as "we also cover gutters", is
+caught only when the model lists it in `usedFacts`. That is one reason autonomy is earned one
+reply type at a time (see `launch-agent-guardrails`).
 
 Any reason other than `null` keeps the draft in the owner's queue, even for a reply type the
 owner has made automatic. "Possible spam" shows in its own section of the owner's list; the

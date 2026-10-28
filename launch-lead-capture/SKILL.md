@@ -142,7 +142,7 @@ The helpers that other skills call, and what each must do:
 | `setStatus(id, to, { from })` | Conditional status change per the rules above. Returns whether it changed. |
 | `claimOwnerAlert(id)` | Atomically sets `ownerAlertClaimedAt` where it is null, or older than 3 minutes with no `ownerAlertedAt` (a crashed send). Returns whether this caller won the claim. |
 | `releaseOwnerAlert(id)`, `markOwnerAlerted(id)` | Clear the claim after a failed send; set `ownerAlertedAt` after a successful one. |
-| `listUnalertedLeads({ olderThanMinutes, newerThanHours })` | Non-spam leads with no `ownerAlertedAt`, in that age window. |
+| `listUnalertedLeads({ olderThanMinutes, newerThanHours?, notReportedToAgency? })` | Leads that are not `spam`, not `isTest` and have no `ownerAlertedAt`, older than `olderThanMinutes` (and newer than `newerThanHours` when given). With `notReportedToAgency`, only those with `agencyAlertedAt` null. A broken test alert is the health check's job, not the sweeper's. |
 | `listLeadsToReAlert()` | `status = new`, not `isTest`, `ownerAlertedAt` over 30 minutes ago, `ownerReAlertedAt` null. |
 | `deliverOwnerAlert(lead, triage)` | Sends the triage card, or the plain alert when `triage` is null, on the owner's channel (email, SMS or Slack); test leads go to the test inbox. Throws on failure. |
 | `sendOwnerReminder(lead)` | In business hours only: sends the one reminder (or alerts a second person), then sets `ownerReAlertedAt`. |
@@ -271,7 +271,10 @@ export const leadIntake = schemaTask({
   retry: { maxAttempts: 6, minTimeoutInMs: 10_000, maxTimeoutInMs: 300_000, factor: 2 },
   run: async ({ leadId }) => {
     const lead = await getLead(leadId)
-    if (!lead || lead.status === "spam") return { skipped: true }
+    // The lead was stored before this run started, so a missing row is a lagging read or a
+    // fault. Throw: a failed run retries and frees its idempotency key; a success keeps it.
+    if (!lead) throw new Error(`lead ${leadId} not found`)
+    if (lead.status === "spam") return { skipped: "spam" }
 
     // Customer messages: one sequence per lead, ever (global key, 30-day TTL).
     if (!lead.isTest && lead.email) {
@@ -304,20 +307,29 @@ export const leadIntake = schemaTask({
 /**
  * Safety net, every 10 minutes:
  * - restart intake for a lead whose alert never went out (up to 24 hours old);
- * - report leads older than that to the agency once (`alertAgency` claims `agencyAlertedAt`);
+ * - report every lead older than that to the agency once (`alertAgency` claims
+ *   `agencyAlertedAt`), with no upper age, so a sweeper outage cannot skip a lead;
  * - send the one 30-minute reminder for real leads still waiting.
+ *
+ * The restart uses its own key per 10-minute window. Reusing `lead-intake:${id}` would return
+ * the first run's handle whenever that run had succeeded or was canceled (Trigger.dev frees a
+ * key only when a run fails), so nothing would restart. The owner-alert claim still makes sure
+ * that the owner gets one alert, however many runs start.
  */
 export const leadIntakeSweeper = schedules.task({
   id: "lead-intake-sweeper",
   cron: "*/10 * * * *",
   run: async () => {
+    const sweepWindow = Math.floor(Date.now() / 600_000)
     const stuck = await listUnalertedLeads({ olderThanMinutes: 5, newerThanHours: 24 })
     for (const lead of stuck) {
       await leadIntake.trigger({ leadId: lead.id }, {
-        idempotencyKey: await idempotencyKeys.create(`lead-intake:${lead.id}`, { scope: "global" }),
+        idempotencyKey: await idempotencyKeys.create(`lead-intake:${lead.id}:sweep:${sweepWindow}`, {
+          scope: "global",
+        }),
       })
     }
-    await alertAgency(await listUnalertedLeads({ olderThanMinutes: 24 * 60, newerThanHours: 25 }))
+    await alertAgency(await listUnalertedLeads({ olderThanMinutes: 24 * 60, notReportedToAgency: true }))
 
     const waiting = await listLeadsToReAlert()
     for (const lead of waiting) await sendOwnerReminder(lead)   // sets ownerReAlertedAt; business hours only
