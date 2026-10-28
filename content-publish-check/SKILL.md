@@ -82,7 +82,7 @@ One pass per concern. A pass that tries to fix everything fixes nothing.
 4. **Plain English:** run the `asd-ste100-writing` checker in `descriptive` mode and fix what
    it flags. Remove the AI tells in `content-blog-post/references/ai-tells.md`.
 5. **Voice:** read it as the owner. Replace any sentence the owner would not say to a customer.
-   No `neverSay` phrases.
+   No `neverSay` phrases and no words from the kit's `wordsWeAvoid`.
 6. **Action:** one call to action, with copy above the button, that matches the post's intent.
 
 ## 4. Search and AI-answer checks

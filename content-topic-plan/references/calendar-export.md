@@ -21,7 +21,8 @@ One row per item. Quote every field. Dates are `YYYY-MM-DD`.
 One all-day event per owner task, on the owner's due date, so the calendar shows what the
 owner must do, not only what goes live. Use CRLF line endings (RFC 5545). `DTEND` is the day
 after `DTSTART` for an all-day event. Each `UID` stays the same when the plan changes, so a
-re-import updates events instead of adding copies.
+re-import updates events instead of adding copies. Add 1 to `SEQUENCE` each time an event
+changes, so calendar apps accept the update.
 
 ```ics
 BEGIN:VCALENDAR
@@ -31,9 +32,10 @@ CALSCALE:GREGORIAN
 BEGIN:VEVENT
 UID:content-2026-11-04-water-heater-leaking@harborplumbing.com
 DTSTAMP:20261028T120000Z
+SEQUENCE:0
 DTSTART;VALUE=DATE:20261102
 DTEND;VALUE=DATE:20261103
-SUMMARY:Blog: send 3 photos and approve "Water heater leaking from the bottom"
+SUMMARY:Blog: send photos and approve the water heater post
 DESCRIPTION:Goes live 2026-11-04. Photos from job #4471. About 30 minutes.
 END:VEVENT
 END:VCALENDAR

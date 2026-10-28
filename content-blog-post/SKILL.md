@@ -76,7 +76,8 @@ Use `references/post-template.md` for a full outline with an example.
 
 - Write in the owner's voice from the kit, on top of plain English (`asd-ste100-writing`).
   Run its checker in `descriptive` mode on the draft.
-- Remove every AI tell in `references/ai-tells.md` and every `neverSay` phrase.
+- Remove every AI tell in `references/ai-tells.md`, every word in the kit's `wordsWeAvoid`
+  and every `neverSay` phrase.
 - Short paragraphs: 1 to 3 sentences. One idea per sentence.
 - "You" for the reader, "we" or "I" for the business, as the owner talks.
 - Facts with numbers, not adjectives: "most repairs take one visit", not "fast service".

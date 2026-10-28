@@ -58,9 +58,13 @@ From the samples, write down:
 
 - **Words we use:** the owner's own terms for the work ("service call", not "appointment";
   "crawl space", not "sub-floor area"). Keep the trade terms customers also use.
-- **Words we never use:** words the owner dislikes, and the AI tells in
-  `content-blog-post/references/ai-tells.md`. Add these phrases to `neverSay` in
-  `lib/business-profile.ts`, so lead replies and posts share one list.
+- **Words we avoid in content:** words the owner dislikes in posts. Keep them in the kit's
+  `voice.wordsWeAvoid`. Posts also drop the AI tells in
+  `content-blog-post/references/ai-tells.md`; that list stays in the reference file.
+- **Phrases never to say anywhere:** a claim or phrase that no lead reply and no post may use
+  ("lifetime guarantee", "cheapest in town") goes in `neverSay` in `lib/business-profile.ts`.
+  The triage agent matches `neverSay` as a substring of every reply draft, so add only
+  multi-word phrases there, never single common words.
 - **Sentence habits:** short or long, "we" or "I", how they greet and sign off, how much humour.
 - **Three sample sentences** in the voice, taken word for word from the samples.
 
@@ -151,7 +155,7 @@ Every post carries a real person's name, not "Admin" or the business name.
 [questions still open, consents to collect, photos to send, in plain words for the owner]
 
 ## Changes to the business profile
-[phrases added to neverSay, price guides to confirm; bump the profile version]
+[multi-word phrases added to neverSay, price guides to confirm; bump the profile version]
 ```
 
 ## Related skills

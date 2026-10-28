@@ -101,9 +101,11 @@ the same channel.
 
 ## 6. Approval
 
-The owner approves the whole set once: the schedule table plus every post. One approval card
-for the set (see `content-publish-check`), with any new wording called out. Never post on
-silence.
+Each channel post gets its own approval card (see `content-publish-check`), because the
+owner approves one item per tap. The facts are already approved in the source, so a card
+lists a confirmation only for new wording. Send the cards together for the owner to tap
+through, or each one a day before its date. A rejected post leaves the schedule; the others
+keep their dates. Never post on silence.
 
 ## Output
 
@@ -127,7 +129,7 @@ silence.
 ## Related skills
 
 - `content-blog-post` and `content-case-study`: the sources this skill repurposes.
-- `content-publish-check`: the approval card for the set.
+- `content-publish-check`: the approval card for each channel post.
 - `content-refresh`: reads the UTM data back in the monthly report.
 - `launch-local-seo`: Google Business Profile rules and the `gbp` UTM campaign.
 - `launch-speed-to-lead`: the email consent and unsubscribe rules.

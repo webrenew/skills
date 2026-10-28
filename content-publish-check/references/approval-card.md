@@ -33,7 +33,7 @@ Store one row per decision, kept for as long as the post is live:
 
 | Field | Example |
 |---|---|
-| item | `post:water-heater-leaking-from-bottom` |
+| item | `post:water-heater-leaking-from-bottom`, or `channel:facebook:water-heater-leaking-from-bottom` for a repurposed post |
 | version | draft id or SHA-256 of the final text |
 | decision | approved / edited / rejected |
 | approver | Sam Harbor |

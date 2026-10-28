@@ -31,7 +31,8 @@ export const contentKit = {
   voice: {
     summary: "Friendly and direct. Explains the why. Never talks down. Signs as Sam.",
     wordsWeUse: ["service call", "water heater", "crawl space", "flat-rate price"],
-    // Words we never use live in businessProfile.neverSay, shared with lead replies.
+    // Content only. Phrases that lead replies must avoid too go in businessProfile.neverSay.
+    wordsWeAvoid: ["state-of-the-art", "hassle-free", "your comfort is our priority"],
     habits: ["Short sentences", "'We' for the team, 'I' when Sam tells a story", "One dry joke at most"],
     samples: [
       "We'll give you the price before we pick up a wrench.",
