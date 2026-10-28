@@ -37,8 +37,9 @@ because the price depends on the tank size, fuel type and access.
 
 H2: When should I call a plumber?
 [Honest limit.] Call when the water comes from the tank itself, when you smell gas, or when
-the relief valve keeps opening. Do not try to replace a gas water heater yourself: it needs
-a permit in most of our service area.
+the relief valve keeps opening. Do not try to replace a gas water heater yourself. Check with
+your local building department: replacing one usually needs a permit. [Link the department's
+page; the claim ledger needs that source.]
 
 [Close: 2-line summary, then the action]
 A wet tank seam means replacement; a wet valve usually means a repair.
