@@ -81,8 +81,29 @@ One flag, in the database or an environment variable, that stops all automatic s
 once. Check it immediately before every send, not only at the start of a job. Show its state
 in the owner's dashboard with a one-tap toggle.
 
+Put the check in the one function that sends, so no sender can forget it. In the Launch pack
+that is `sendEmail` in `launch-speed-to-lead`: every automatic email (confirmation,
+follow-ups, review request, an auto-sent draft) is skipped while `paused` is on. A message the
+owner approves by hand is not automatic and still goes out. Other channels (SMS, Slack) need
+the same check in their one send function.
+
 ```ts
-async function canSend(actionType: ActionType) {
+// lib/agent-settings.ts
+import { loadSettings } from "@/lib/settings-store"     // your storage: one row per business
+
+export type ActionType = "first-reply"                   // add one per kind of automatic message
+
+export interface AgentSettings {
+  paused: boolean                // the kill switch
+  autonomous: ActionType[]       // action types the owner has allowed to send without approval
+}
+
+export async function getAgentSettings(): Promise<AgentSettings> {
+  return loadSettings()
+}
+
+/** May the agent send this action type without the owner? `sendEmail` checks `paused` again. */
+export async function canSend(actionType: ActionType) {
   const settings = await getAgentSettings()
   if (settings.paused) return false
   return settings.autonomous.includes(actionType)

@@ -122,7 +122,7 @@ export interface Lead {
   utm: Record<string, string>
   ownerAlertClaimedAt: Date | null  // set just before the owner alert is sent
   ownerAlertedAt: Date | null       // set after the owner alert (plain or triage card) is sent
-  ownerReAlertedAt: Date | null     // set after the one 30-minute reminder
+  ownerReAlertedAt: Date | null     // claimed just before the one 30-minute reminder; cleared if it fails
   agencyAlertClaimedAt: Date | null // set just before a stuck lead is reported to the agency
   agencyAlertedAt: Date | null      // set after a lead stuck for 24 hours is reported to the agency
   repliedAt: Date | null        // set when the lead replies by email or text
@@ -169,7 +169,10 @@ The helpers that other skills call, and what each must do:
 | `listLeadsToReAlert()` | `status = new`, not `isTest`, not `possibleSpam`, `ownerAlertedAt` over 30 minutes ago, `ownerReAlertedAt` null. |
 | `deliverOwnerAlert(lead, triage)` | Sends the triage card, or the plain alert when `triage` is null, on the owner's channel (email, SMS or Slack); test leads go to the test inbox. A `possibleSpam` lead is labelled "Possible spam", with "Not spam" (`confirmNotSpam`) and "Spam" (`setStatus(id, "spam", ...)`) actions. Throws on failure. |
 | `unsubscribeByToken(token)` | Sets `unsubscribedAt` where `unsubscribeToken` matches and `unsubscribedAt` is null. See `launch-speed-to-lead`. |
-| `sendOwnerReminder(lead)` | In business hours only: sends the one reminder (or alerts a second person), then sets `ownerReAlertedAt`. |
+| `claimOwnerReminder(id)`, `releaseOwnerReminder(id)` | Set `ownerReAlertedAt` where it is null and return whether this caller won; clear it after a failed send. |
+| `deliverOwnerReminder(lead)` | Sends the one reminder (or alerts a second person). Throws on failure. |
+| `isBusinessHours(at)` | Whether `at` is inside the business's opening hours, in its time zone. |
+| `sendOwnerReminder(lead)` | In business hours only: claim, deliver, release on failure. See `lib/owner-alerts.ts`. |
 | `claimAgencyAlert(id)` | Atomically sets `agencyAlertClaimedAt` where it is null, or older than 3 minutes with no `agencyAlertedAt` (a crashed send). Returns whether this caller won the claim. |
 | `releaseAgencyAlert(id)`, `markAgencyAlerted(id)` | Clear the claim after a failed report; set `agencyAlertedAt` after a successful one. |
 | `deliverAgencyAlert(lead)` | Reports one stuck lead to the agency's support channel. Throws on failure. |
@@ -308,8 +311,9 @@ export async function startLeadIntake(leadId: string) {
 ```ts
 // lib/owner-alerts.ts
 import {
-  claimAgencyAlert, claimOwnerAlert, deliverAgencyAlert, deliverOwnerAlert,
-  markAgencyAlerted, markOwnerAlerted, releaseAgencyAlert, releaseOwnerAlert, type Lead,
+  claimAgencyAlert, claimOwnerAlert, claimOwnerReminder, deliverAgencyAlert, deliverOwnerAlert,
+  deliverOwnerReminder, isBusinessHours, markAgencyAlerted, markOwnerAlerted, releaseAgencyAlert,
+  releaseOwnerAlert, releaseOwnerReminder, type Lead,
 } from "@/lib/leads"
 import type { PreparedTriage } from "@/lib/lead-triage-run"
 
@@ -350,6 +354,25 @@ export async function alertAgency(leads: Lead[]): Promise<{ failed: number }> {
     await markAgencyAlerted(lead.id)
   }
   return { failed }
+}
+
+/**
+ * The one 30-minute reminder. The claim is a conditional set of `ownerReAlertedAt`, so a second
+ * sweep cannot send it twice. A failure clears the claim for the next sweep and does not throw,
+ * so one failure does not stop the other reminders. A crash between claim and send loses only
+ * this reminder: the owner already has the first alert.
+ */
+export async function sendOwnerReminder(lead: Lead): Promise<"sent" | "later" | "already" | "failed"> {
+  if (!isBusinessHours(new Date())) return "later"
+  if (!(await claimOwnerReminder(lead.id))) return "already"
+  try {
+    await deliverOwnerReminder(lead)
+  } catch (error) {
+    await releaseOwnerReminder(lead.id)
+    console.error("owner reminder failed, next sweep retries", lead.id, error)
+    return "failed"
+  }
+  return "sent"
 }
 ```
 
@@ -436,7 +459,7 @@ export const leadIntakeSweeper = schedules.task({
     const agency = await alertAgency(await listUnalertedLeads({ olderThanMinutes: 24 * 60, notReportedToAgency: true }))
 
     const waiting = await listLeadsToReAlert()
-    for (const lead of waiting) await sendOwnerReminder(lead)   // sets ownerReAlertedAt; business hours only
+    for (const lead of waiting) await sendOwnerReminder(lead)   // claims ownerReAlertedAt; business hours only
     return { restarted: stuck.length, agencyFailed: agency.failed, reminded: waiting.length }
   },
 })

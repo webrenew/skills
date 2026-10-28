@@ -61,21 +61,64 @@ idempotency key. Do not start it from anywhere else.
 // lib/send-email.ts
 import { Resend } from "resend"
 
-import { business } from "@/lib/business"
+import { getAgentSettings } from "@/lib/agent-settings"   // launch-agent-guardrails
+import { business } from "@/lib/business"                 // launch-local-seo
 
 const resend = new Resend(process.env.RESEND_API_KEY)
-const SITE = business.url                              // launch-local-seo
+const SITE = business.url
 
 /** The footer link and the List-Unsubscribe header use this one URL. Tokens can hold + / =. */
 export function unsubscribeUrl(token: string) {
   return `${SITE}/unsubscribe?token=${encodeURIComponent(token)}`
 }
 
-/** Resend returns `{ data, error }` and does not throw. Throw, so the task retries. */
-export async function sendEmail(payload: Parameters<typeof resend.emails.send>[0], idempotencyKey: string) {
+/** One-click unsubscribe headers (RFC 8058) for every follow-up and marketing email. */
+export function unsubscribeHeaders(token: string) {
+  return { "List-Unsubscribe": `<${unsubscribeUrl(token)}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" }
+}
+
+// CAN-SPAM wants a postal address in every follow-up and marketing email. A business with no
+// storefront uses a mailing address or PO box here.
+const { street, city, region, postalCode } = business.address
+export const POSTAL_ADDRESS = `${business.name}, ${street}, ${city}, ${region} ${postalCode}`
+
+type SendMode = "automatic" | "owner-approved"
+
+/**
+ * The only way the app emails a customer. Automatic sends check the kill switch here, right
+ * before the send, so no sender can skip it (see `launch-agent-guardrails`). A send the owner
+ * approved by hand is not automatic. Returns null when the kill switch skipped the send.
+ * Resend returns `{ data, error }` and does not throw: throw, so the task retries.
+ */
+export async function sendEmail(
+  payload: Parameters<typeof resend.emails.send>[0],
+  idempotencyKey: string,
+  mode: SendMode = "automatic",
+) {
+  if (mode === "automatic" && (await getAgentSettings()).paused) return null
   const { data, error } = await resend.emails.send(payload, { idempotencyKey })
   if (error) throw new Error(`Resend: ${error.name}: ${error.message}`)
   return data
+}
+```
+
+A paused send is skipped, not queued, and the step is not recorded as sent. Every follow-up
+and review template renders a footer with `unsubscribeUrl(lead.unsubscribeToken)` and
+`POSTAL_ADDRESS`.
+
+```ts
+// lib/lead-eligibility.ts
+import type { Lead } from "@/lib/leads"
+
+// UK and EU: true (follow-ups and the review request only with marketing consent). A US
+// business that relies on CAN-SPAM can set FOLLOW_UPS_NEED_CONSENT=false. See "Email rules".
+const FOLLOW_UPS_NEED_CONSENT = process.env.FOLLOW_UPS_NEED_CONSENT !== "false"
+
+/** The checks every follow-up and the review request share. Status rules stay with each sender. */
+export function mayEmailLead(lead: Lead | null): lead is Lead & { email: string } {
+  if (!lead?.email || lead.status === "spam") return false
+  if (lead.isTest || lead.possibleSpam || lead.unsubscribedAt) return false
+  return !FOLLOW_UPS_NEED_CONSENT || lead.marketingConsent
 }
 ```
 
@@ -84,14 +127,12 @@ export async function sendEmail(payload: Parameters<typeof resend.emails.send>[0
 import { schemaTask, wait } from "@trigger.dev/sdk"
 import { z } from "zod"
 
+import { mayEmailLead } from "@/lib/lead-eligibility"
 import { getLead, nextBusinessMorning, recordStepSent, type Lead } from "@/lib/leads"
-import { sendEmail, unsubscribeUrl } from "@/lib/send-email"
+import { sendEmail, unsubscribeHeaders } from "@/lib/send-email"
 import { checkInEmail, closeLoopEmail, confirmationEmail, proofEmail } from "@/emails/lead-sequence"
 
 const FROM = "Sam at Harbor Plumbing <sam@harborplumbing.com>"
-// UK and EU: true (follow-ups only with marketing consent). A US business that relies on
-// CAN-SPAM can set FOLLOW_UPS_NEED_CONSENT=false. See "Email rules".
-const FOLLOW_UPS_NEED_CONSENT = process.env.FOLLOW_UPS_NEED_CONSENT !== "false"
 
 const FOLLOW_UPS = [
   { key: "check-in", afterBusinessDays: 1, email: checkInEmail },
@@ -104,9 +145,7 @@ const FOLLOW_UPS = [
 const FOLLOW_UP_STATUSES = new Set<Lead["status"]>(["new", "contacted"])
 
 function stillWaiting(lead: Lead | null): lead is Lead & { email: string } {
-  if (!lead?.email || !FOLLOW_UP_STATUSES.has(lead.status)) return false
-  if (lead.isTest || lead.repliedAt || lead.unsubscribedAt || lead.possibleSpam) return false
-  return !FOLLOW_UPS_NEED_CONSENT || lead.marketingConsent
+  return mayEmailLead(lead) && FOLLOW_UP_STATUSES.has(lead.status) && !lead.repliedAt
 }
 
 export const leadFollowUp = schemaTask({
@@ -121,8 +160,8 @@ export const leadFollowUp = schemaTask({
     // `first` is read fresh on every attempt, so a retry sees a lead marked spam since.
     if (first.status === "spam" || first.unsubscribedAt) return { sent: [] }
     if (!first.sentSteps.includes("confirmation")) {
-      await sendEmail({ from: FROM, to: first.email, subject: "We got your request", react: confirmationEmail(first) }, `${leadId}:confirmation`)
-      await recordStepSent(leadId, "confirmation")
+      const sent = await sendEmail({ from: FROM, to: first.email, subject: "We got your request", react: confirmationEmail(first) }, `${leadId}:confirmation`)
+      if (sent) await recordStepSent(leadId, "confirmation")   // null: the kill switch is on
     }
 
     // Steps are planned from the lead's arrival. When the sequence starts late (the owner
@@ -138,14 +177,11 @@ export const leadFollowUp = schemaTask({
       const lead = await getLead(leadId)               // re-read: they may have replied or booked
       if (!stillWaiting(lead)) break
       if (lead.sentSteps.includes(step.key)) continue
-      await sendEmail({
+      const sent = await sendEmail({
         from: FROM, to: lead.email, subject: step.email.subject(lead), react: step.email.body(lead),
-        headers: {
-          "List-Unsubscribe": `<${unsubscribeUrl(lead.unsubscribeToken)}>`,
-          "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
-        },
+        headers: unsubscribeHeaders(lead.unsubscribeToken),
       }, `${leadId}:${step.key}`)
-      await recordStepSent(leadId, step.key)
+      if (sent) await recordStepSent(leadId, step.key)
     }
     const final = await getLead(leadId)
     return { sent: final?.sentSteps ?? [] }
@@ -213,8 +249,9 @@ import { schemaTask, wait } from "@trigger.dev/sdk"
 import { z } from "zod"
 
 import { business } from "@/lib/business"                 // launch-local-seo
+import { mayEmailLead } from "@/lib/lead-eligibility"
 import { getLead, recordStepSent } from "@/lib/leads"
-import { sendEmail } from "@/lib/send-email"
+import { POSTAL_ADDRESS, sendEmail, unsubscribeHeaders, unsubscribeUrl } from "@/lib/send-email"
 import { reviewRequestEmail } from "@/emails/lead-sequence"
 
 export const reviewRequest = schemaTask({
@@ -223,12 +260,19 @@ export const reviewRequest = schemaTask({
   run: async ({ leadId }) => {
     await wait.for({ days: 1 })                       // after the job, not during it
     const lead = await getLead(leadId)
-    if (!lead?.email || lead.status !== "won" || lead.unsubscribedAt || lead.sentSteps.includes("review-request")) return
-    await sendEmail({
+    // A review request is marketing: the same eligibility and consent rule as the follow-ups.
+    if (!mayEmailLead(lead) || lead.status !== "won" || lead.sentSteps.includes("review-request")) return
+    const sent = await sendEmail({
       from: "Sam at Harbor Plumbing <sam@harborplumbing.com>", to: lead.email,
-      subject: "How did we do?", react: reviewRequestEmail(lead, business.googleReviewUrl),
+      subject: "How did we do?",
+      react: reviewRequestEmail(lead, {
+        reviewUrl: business.googleReviewUrl,
+        unsubscribeUrl: unsubscribeUrl(lead.unsubscribeToken),
+        postalAddress: POSTAL_ADDRESS,
+      }),
+      headers: unsubscribeHeaders(lead.unsubscribeToken),
     }, `${leadId}:review-request`)
-    await recordStepSent(leadId, "review-request")
+    if (sent) await recordStepSent(leadId, "review-request")
   },
 })
 ```
@@ -287,7 +331,8 @@ Text gets the fastest replies, and it has the strictest rules:
   marketing consent. The check-in, proof and close-the-loop emails go beyond that reply. In
   the US, CAN-SPAM allows them with an unsubscribe link and the postal address. In the UK and
   EU, send them only to leads with `marketingConsent`, unless the business's adviser confirms
-  that the soft opt-in covers them. `FOLLOW_UPS_NEED_CONSENT` (on by default) enforces this.
+  that the soft opt-in covers them. `FOLLOW_UPS_NEED_CONSENT` (on by default) enforces this, in
+  `mayEmailLead`, for the follow-ups and the review request alike.
 - Send from the business's own domain with SPF, DKIM and DMARC set, or the emails land in spam.
 - Never add a lead to a newsletter without the marketing consent from the form.
 

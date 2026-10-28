@@ -289,7 +289,10 @@ Draft: "Hi Dana, sorry about the leak. Water heater repairs start from $149, and
 ```
 
 Approve sends the draft through `sendEmail` (see `launch-speed-to-lead`) with the key
-`leadId:first-reply`, then records `first-reply` in `sentSteps` and calls
+`leadId:first-reply` and mode `"owner-approved"`, so the kill switch does not block a reply
+the owner chose to send. A draft that goes out alone, for a reply type the owner made
+automatic, passes `canSend(actionType)` first and uses the default `"automatic"` mode, so the
+kill switch stops it. After the send, Approve records `first-reply` in `sentSteps` and calls
 `setStatus(leadId, "contacted", { from: ["new"] })`. A lead that has already booked stays
 `booked`. The follow-ups in `launch-speed-to-lead` keep running after this reply: they stop
 when the customer answers, books or opts out, not when the owner writes.

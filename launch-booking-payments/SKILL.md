@@ -92,16 +92,23 @@ export async function POST(request: Request) {
     leadId: payload.metadata?.leadId,
   }
 
-  if (triggerEvent === "BOOKING_CREATED") await markLeadBooked(booking)
-  if (triggerEvent === "BOOKING_RESCHEDULED") {
-    // Cal creates a new booking: `uid` is new, `rescheduleUid` is the one it replaces. When no
-    // lead holds the old booking, treat the new one as a fresh booking, so it is never lost.
-    const moved = payload.rescheduleUid
-      ? await markBookingRescheduled({ ...booking, previousBookingUid: payload.rescheduleUid })
-      : false
-    if (!moved) await markLeadBooked(booking)
+  if (triggerEvent === "BOOKING_CANCELLED") {
+    await markBookingCancelled(booking)          // matches on bookingUid, not on the attendee
+    return new Response("ok")
   }
-  if (triggerEvent === "BOOKING_CANCELLED") await markBookingCancelled(booking)
+  if (triggerEvent !== "BOOKING_CREATED" && triggerEvent !== "BOOKING_RESCHEDULED") return new Response("ignored")
+
+  // Cal creates a new booking on a reschedule: `uid` is new, `rescheduleUid` is the one it
+  // replaces. Move the lead that holds the old booking.
+  const previousBookingUid = triggerEvent === "BOOKING_RESCHEDULED" ? payload.rescheduleUid : undefined
+  if (previousBookingUid && (await markBookingRescheduled({ ...booking, previousBookingUid }))) {
+    return new Response("ok")
+  }
+
+  // A new booking, or a reschedule that no lead holds: match the lead by id or email. With
+  // neither, change nothing. 202 tells Cal it arrived, so it does not retry.
+  if (!booking.leadId && !booking.email) return new Response("unmatched booking", { status: 202 })
+  await markLeadBooked(booking)
   return new Response("ok")
 }
 ```
@@ -110,7 +117,7 @@ What each helper does to the shared lead (see `launch-lead-capture`, section 5):
 
 | Helper | Lead change |
 |---|---|
-| `markLeadBooked` | Find the lead by `leadId`, else by email (most recent open lead). Do nothing if this `bookingUid` is already stored. Store `bookingUid`, then `setStatus(id, "booked", { from: ["new", "contacted", "cancelled"] })`. That stops the follow-ups in `launch-speed-to-lead`. |
+| `markLeadBooked` | Find the lead by `leadId`, else by email (most recent open lead). It never matches on a missing or empty email: with no `leadId` and no email it changes nothing (the route answers 202 before it gets here). Do nothing if this `bookingUid` is already stored. Store `bookingUid`, then `setStatus(id, "booked", { from: ["new", "contacted", "cancelled"] })`. That stops the follow-ups in `launch-speed-to-lead`. |
 | `markBookingRescheduled` | Find the lead whose `bookingUid` equals `previousBookingUid`. Store the new `bookingUid` and time. Status stays `booked`. Returns false when no lead holds `previousBookingUid`; the route then calls `markLeadBooked` with the new booking (by `leadId`, else attendee email). |
 | `markBookingCancelled` | Only when the event's `uid` equals the lead's current `bookingUid`: `setStatus(id, "cancelled", { from: ["booked"] })`. Alert the owner once ("Dana cancelled Thursday's visit"), keyed on `bookingUid:cancelled`, because Cal retries. Follow-ups stay stopped; the owner decides whether to call. |
 
