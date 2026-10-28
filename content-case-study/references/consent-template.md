@@ -26,8 +26,9 @@ You will see the final text before it goes live. You can ask us to remove it at 
 email hello@harborplumbing.com, and we will take it off our website within 7 days and stop
 any new use.
 
-We did not pay you or give you a discount for this permission.
-[ ] Exception (we will say so next to your story): ______________________
+No payment, discount or gift was given in exchange for this permission.
+[ ] You already had a discount, gift or personal connection with us before we asked
+    (we will say so next to your story): ______________________
 
 Name: ______________________   Signature: ______________________   Date: ____________
 ```

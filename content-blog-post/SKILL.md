@@ -111,6 +111,8 @@ Use `references/post-template.md` for a full outline with an example.
 
 ## 6. Package
 
+Facts checked: October 2026 (Google's FAQ and review rich-result rules below).
+
 | Field | Rule |
 |---|---|
 | Slug | Lowercase, hyphens, 3 to 6 words, no dates or stop words: `water-heater-leaking-from-bottom` |

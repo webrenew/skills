@@ -46,9 +46,9 @@ No draft goes to anyone before consent is in writing. Use
 - **Clinics and health businesses:** a patient story, photo or quote needs a HIPAA-compliant
   marketing authorization, not only a consent form. Use the practice's own authorization form.
 - **Children:** a parent's written consent for any child's name, face or story.
-- Never offer payment, a discount or a gift for a positive story. If the customer got any
-  discount or connection (a family member, a staff member, a free service), the case study
-  says so.
+- Never offer payment, a discount or a gift for a positive story. If the customer already had
+  a discount or connection (a family member, a staff member, a free service), the case study
+  says so; the consent form records it.
 
 ## 3. Interview the customer (five questions)
 
