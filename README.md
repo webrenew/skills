@@ -40,6 +40,30 @@ Install the pack:
 npx skills add https://github.com/webrenew/skills --skill launch-local-seo launch-site-checklist launch-landing-page launch-lead-capture launch-speed-to-lead launch-booking-payments launch-lead-triage-agent launch-site-health-report launch-agent-guardrails
 ```
 
+## Content skills
+
+Seven skills that help a small business publish content that sounds like the owner, proves
+it with real work, and brings leads. A person approves everything before it goes live.
+
+| Skill | What it gives the business |
+|-------|----------------------------|
+| [content-voice-and-proof](./content-voice-and-proof) | Content that sounds like the owner: voice, readers, places served, a proof bank of real jobs, numbers, photos and approved quotes, and a real byline |
+| [content-topic-plan](./content-topic-plan) | Know what to write next: real customer questions ranked by lead value, tied to service pages, in a calendar the owner can keep |
+| [content-blog-post](./content-blog-post) | A post that answers one customer question better than anyone nearby, with an answer AI search can quote, ready for Launch or Markdown |
+| [content-publish-check](./content-publish-check) | Nothing goes live that the owner cannot stand behind: a source for every claim, search checks, consent, and an approval card |
+| [content-repurpose](./content-repurpose) | One post becomes two to three weeks of channel posts: Google Business Profile, social, video, FAQ and email, with UTM tags |
+| [content-case-study](./content-case-study) | Finished jobs become proof that wins the next one: consent, a five-question interview, and the FTC testimonial rules |
+| [content-refresh](./content-refresh) | Know which posts bring leads and fix the ones that slip, with a one-minute monthly report for the owner |
+
+Start with `content-voice-and-proof`: the other six load its content kit. The skills reuse the
+business identity and profile from `launch-local-seo` and `launch-lead-triage-agent`.
+
+Install the content skills:
+
+```bash
+npx skills add https://github.com/webrenew/skills --skill content-voice-and-proof content-topic-plan content-blog-post content-publish-check content-repurpose content-case-study content-refresh
+```
+
 ## Skill Structure
 
 Each skill starts with a `SKILL.md` file. Some packages also contain:
