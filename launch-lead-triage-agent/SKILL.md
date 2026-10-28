@@ -56,7 +56,8 @@ export const businessProfile = {
   hours: "Mon–Fri 7am–6pm; emergency calls 24/7 at +1-843-555-0142",
   bookingUrl: "https://cal.com/harbor/visit",
   tone: "Friendly, direct, no jargon. Sign as Sam.",
-  neverSay: ["exact prices for replacements", "same-day promises after 4pm"],
+  // Literal phrases. The prompt lists them, and code rejects a draft that contains one.
+  neverSay: ["same-day", "lifetime guarantee", "cheapest in town"],
 } as const
 ```
 
@@ -73,7 +74,8 @@ import { z } from "zod"
 import { businessProfile } from "@/lib/business-profile"
 import type { Lead } from "@/lib/leads"
 
-export const TRIAGE_MODEL = "anthropic/claude-haiku-5.5"
+// Vercel AI Gateway id. Check the Gateway's model list for current ids before you deploy.
+export const TRIAGE_MODEL = "anthropic/claude-haiku-4.5"
 
 const serviceKeys = businessProfile.services.map((s) => s.key) as [string, ...string[]]
 
@@ -138,13 +140,26 @@ provider setup if it has one.
 
 ## 3. Checks in code, after the model
 
-Do not rely on the prompt alone. A "fact" counts only if it appears in the profile word for
-word. Every amount, day, time and promise in the draft must itself appear in one of those
-facts: "$89" fails when the facts say "$149", even though both are prices.
+Do not rely on the prompt alone. A "fact" counts only if it appears word for word in the
+profile's fact fields. `tone` and `neverSay` are instructions, not facts, so they are left
+out: a draft must not "ground" itself on a phrase it is told never to say. Every amount, day,
+time and promise in the draft must itself appear in one of those facts: "$89" fails when the
+facts say "$149", even though both are prices. Any `neverSay` phrase in the draft or its
+facts sends the draft to the owner.
 
 ```ts
-const PROFILE_TEXT = JSON.stringify(businessProfile).toLowerCase()
+// Only the fact fields. Add a field here when the profile gains one.
+const PROFILE_TEXT = JSON.stringify({
+  name: businessProfile.name,
+  services: businessProfile.services,
+  serviceArea: businessProfile.serviceArea,
+  hours: businessProfile.hours,
+  bookingUrl: businessProfile.bookingUrl,
+}).toLowerCase()
+const FORBIDDEN = businessProfile.neverSay.map((phrase) => phrase.toLowerCase())
 const MIN_FACT_LENGTH = 8   // "" or "$" would match any profile
+
+const hasForbiddenPhrase = (text: string) => FORBIDDEN.some((phrase) => text.toLowerCase().includes(phrase))
 
 const CLAIMS = [
   [/[$€£]\s?\d(?:[\d,.]*\d)?|\d(?:[\d,.]*\d)?\s?(?:dollars|usd)\b/gi, "ungrounded-price"],
@@ -168,6 +183,7 @@ export function needsOwnerReview(triage: Triage): string | null {
   if (triage.isSpam) return "possible-spam"
   if (triage.fit !== "good" || triage.inServiceArea === "no") return "fit"
   if (triage.missingInfo.length > 0) return "missing-info"
+  if (hasForbiddenPhrase(triage.draftReply) || triage.usedFacts.some(hasForbiddenPhrase)) return "forbidden-phrase"
 
   // A draft must rest on at least one real fact, and every fact must be in the profile.
   const facts = triage.usedFacts.map((fact) => fact.trim())
@@ -194,7 +210,7 @@ owner decides, and only the owner sets status `spam`. Leads that the form's time
 ```ts
 // lib/lead-triage-run.ts
 import { businessProfile } from "@/lib/business-profile"
-import { saveTriage, type Lead } from "@/lib/leads"
+import { getStoredTriage, saveTriage, type Lead } from "@/lib/leads"
 import { needsOwnerReview, TRIAGE_MODEL, triageLead, type Triage } from "@/lib/lead-triage"
 
 export interface PreparedTriage {
@@ -204,12 +220,21 @@ export interface PreparedTriage {
 
 /** Throws on any failure, so `lead-intake` sends the plain alert instead. Sends nothing. */
 export async function prepareTriage(lead: Lead): Promise<PreparedTriage> {
+  // A retry or a sweep runs lead-intake again. Reuse the stored card, so the model runs once
+  // per lead and profile version, and the owner always sees the same draft.
+  const stored = await getStoredTriage(lead.id, businessProfile.version)
+  if (stored) return stored
+
   const triage = await triageLead(lead)
   const reviewReason = needsOwnerReview(triage)
   await saveTriage(lead.id, { ...triage, reviewReason, model: TRIAGE_MODEL, profileVersion: businessProfile.version })
   return { triage, reviewReason }
 }
 ```
+
+`saveTriage(leadId, record)` upserts one row per lead id and profile version.
+`getStoredTriage(leadId, profileVersion)` returns that row as `{ triage, reviewReason }`, or
+null. A changed profile gets a fresh triage; a retry does not.
 
 Triage never sends the owner alert itself. `lead-intake` passes the prepared card to
 `sendOwnerAlert` (see `launch-lead-capture`), which claims the alert first, so the owner gets

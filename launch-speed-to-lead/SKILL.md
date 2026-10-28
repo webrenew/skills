@@ -42,6 +42,7 @@ Check all of these before **every** send, not only at the start:
   `launch-booking-payments`), or the owner marked the lead won, lost or spam.
 - The lead unsubscribed (`unsubscribedAt` is set).
 - The lead is marked `possibleSpam` and the owner has not tapped "Not spam" yet.
+- The lead is marked `isTest` (for example a launch test entry, marked after it was sent).
 - A follow-up needs marketing consent here and `marketingConsent` is false (see "Email rules").
 - The send would land outside business hours for a follow-up (instant replies are fine at
   any hour; follow-ups wait for the morning in the business's time zone).
@@ -93,7 +94,7 @@ const FOLLOW_UPS = [
 ] as const
 
 function stillWaiting(lead: Lead | null): lead is Lead & { email: string } {
-  if (!lead?.email || lead.status !== "new" || lead.repliedAt || lead.unsubscribedAt || lead.possibleSpam) return false
+  if (!lead?.email || lead.status !== "new" || lead.isTest || lead.repliedAt || lead.unsubscribedAt || lead.possibleSpam) return false
   return !FOLLOW_UPS_NEED_CONSENT || lead.marketingConsent
 }
 
@@ -153,9 +154,12 @@ function page(body: string) {
   )
 }
 
+const INCOMPLETE = "<p>This link is incomplete. Reply to this email and we will remove you.</p>"
+
 // The footer link: confirm with one button.
 export function GET(request: Request) {
   const token = new URL(request.url).searchParams.get("token") ?? ""
+  if (!token) return page(INCOMPLETE)
   return page(
     `<p>Stop follow-up emails from Harbor Plumbing?</p>` +
       `<form method="post" action="/unsubscribe?token=${encodeURIComponent(token)}"><button>Unsubscribe</button></form>`,
@@ -165,12 +169,15 @@ export function GET(request: Request) {
 // The button above, and the mailbox's one-click unsubscribe. Always 200, never a redirect.
 export async function POST(request: Request) {
   const token = new URL(request.url).searchParams.get("token") ?? ""
-  if (token) await unsubscribeByToken(token)
+  if (!token) return page(INCOMPLETE)                  // writes nothing
+  await unsubscribeByToken(token)
   return page("<p>You are unsubscribed. We will not email you again about this request.</p>")
 }
 ```
 
 The answer is the same for an unknown token, so the route tells nobody which tokens exist.
+A link with no token (cut off by a mail client) gets a page that asks the person to reply
+instead.
 The footer link in every follow-up uses `unsubscribeUrl(lead.unsubscribeToken)` too.
 
 ### Review request after a won job

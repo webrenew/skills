@@ -69,9 +69,14 @@ one hop is a chain; fix it to point straight at the final URL.
 
 ## 3. Every contact path delivers
 
-- [ ] Submit each form on production with a real entry, using an inbox you control. Confirm
-  that the lead is stored, that the owner gets the alert, and that the confirmation arrives.
-  Then set `isTest = true` on that lead so it stays out of every count and report.
+- [ ] Run the delivery pipeline through the test entry point (`POST /api/leads/test` with
+  the `x-lead-test-secret` header, see `launch-lead-capture`). It stores an `isTest` lead and
+  alerts the test inbox. A 503 means `LEAD_TEST_SECRET` or `LEAD_TEST_INBOX` is not set.
+- [ ] Submit each form on production once by hand with a real entry, using an inbox you
+  control, to prove the form itself. Confirm that the lead is stored, that the owner gets the
+  alert, and that the confirmation arrives. Then set `isTest = true` on that lead at once. It
+  stays out of every count and report, and the follow-up steps that have not gone out yet
+  stop.
 - [ ] Every phone number is a `tel:` link and dials the right number on a phone.
 - [ ] Booking and payment links open the live (not test) calendar or checkout.
 - [ ] The confirmation message says what happens next and when.

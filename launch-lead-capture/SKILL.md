@@ -186,6 +186,31 @@ import { allowSubmission } from "@/lib/rate-limit"
 
 type Trap = "honeypot" | "too-fast"
 
+/**
+ * The client address that the platform sets, or null. On Vercel that is `x-real-ip`. Otherwise
+ * use the last `x-forwarded-for` hop, which your own proxy appended; the first hop is whatever
+ * the client sent. This assumes exactly one proxy in front of the app.
+ */
+function clientAddress(requestHeaders: Headers): string | null {
+  const realIp = requestHeaders.get("x-real-ip")?.trim()
+  if (realIp) return realIp
+  const hops = requestHeaders.get("x-forwarded-for")?.split(",").map((hop) => hop.trim()).filter(Boolean) ?? []
+  return hops.at(-1) ?? null
+}
+
+let warnedNoAddress = false
+
+/** False only when this address is over the limit. No trusted address: no limit, never a lost lead. */
+async function underRateLimit(): Promise<boolean> {
+  const address = clientAddress(await headers())
+  if (!address) {
+    if (!warnedNoAddress) console.warn("lead form rate limit skipped: no trusted client address")
+    warnedNoAddress = true
+    return true
+  }
+  return allowSubmission(`lead:${address}`, { limit: 5, windowSeconds: 600 })
+}
+
 function botTrap(input: unknown): Trap | null {
   const fields = (input ?? {}) as { website?: unknown; startedAt?: unknown }
   if (typeof fields.website === "string" && fields.website !== "") return "honeypot"
@@ -195,12 +220,6 @@ function botTrap(input: unknown): Trap | null {
 }
 
 export async function submitLead(input: unknown) {
-  // A Server Action has no IP of its own: read the client IP from the platform's header.
-  const ip = (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown"
-  if (!(await allowSubmission(`lead:${ip}`, { limit: 5, windowSeconds: 600 }))) {
-    return { ok: false as const, errors: {}, message: "Too many tries. Please call us instead." }
-  }
-
   const parsed = leadInputSchema.safeParse(input)
   const trap = botTrap(input)
 
@@ -208,6 +227,11 @@ export async function submitLead(input: unknown) {
     // Only a honeypot hit fakes success. A fast sender may be a person who needs the errors.
     if (trap === "honeypot") return { ok: true as const }
     return { ok: false as const, errors: z.flattenError(parsed.error).fieldErrors }
+  }
+
+  // After validation, so a typo does not use up a person's tries.
+  if (!(await underRateLimit())) {
+    return { ok: false as const, errors: {}, message: "Too many tries. Please call us instead." }
   }
 
   // A honeypot lead is stored as spam with no alert. A "too-fast" lead runs the pipeline as
@@ -218,8 +242,9 @@ export async function submitLead(input: unknown) {
 }
 ```
 
-`allowSubmission` is a small counter keyed by IP, in Redis (for example Upstash) or the
-database. If the platform firewall already rate-limits POSTs to the form's page (for example
+`allowSubmission` is a small counter keyed by address, in Redis (for example Upstash) or the
+database. In a Route Handler, `ipAddress(request)` from `@vercel/functions` gives the same
+address; a Server Action has no `Request`, so it reads the header. If the platform firewall already rate-limits POSTs to the form's page (for example
 a Vercel WAF rule), you can rely on that and remove the call. Show `message` above the form.
 ```
 
@@ -327,6 +352,7 @@ export const leadIntake = schemaTask({
     if (lead.ownerAlertedAt) return { alerted: "already" }
 
     // Triage only prepares the card. A triage failure means a plain alert, never two alerts.
+    // prepareTriage reuses the stored card, so a retry or a sweep does not call the model again.
     let triage: PreparedTriage | null = null
     if (TRIAGE_ENABLED && !lead.isTest && !lead.possibleSpam) {
       try {
@@ -399,18 +425,21 @@ import { timingSafeEqual } from "node:crypto"
 import { createLead } from "@/lib/leads"
 import { startLeadIntake } from "@/lib/lead-intake"
 
-function authorized(header: string | null) {
-  const secret = process.env.LEAD_TEST_SECRET
-  if (!secret || !header) return false
+function authorized(header: string | null, secret: string) {
+  if (!header) return false
   const a = Buffer.from(header)
   const b = Buffer.from(secret)
   return a.length === b.length && timingSafeEqual(a, b)
 }
 
 export async function POST(request: Request) {
-  if (!authorized(request.headers.get("x-lead-test-secret"))) return new Response("forbidden", { status: 403 })
+  const secret = process.env.LEAD_TEST_SECRET
+  const inbox = process.env.LEAD_TEST_INBOX
+  // 503, not 403: the health check reports a missing setting, not a broken form.
+  if (!secret || !inbox) return new Response("test route not configured", { status: 503 })
+  if (!authorized(request.headers.get("x-lead-test-secret"), secret)) return new Response("forbidden", { status: 403 })
   const id = await createLead(
-    { name: "Health check", email: process.env.LEAD_TEST_INBOX ?? "", need: "Automated form test", marketingConsent: false },
+    { name: "Health check", email: inbox, need: "Automated form test", marketingConsent: false },
     { isTest: true, trap: null },
   )
   await startLeadIntake(id)

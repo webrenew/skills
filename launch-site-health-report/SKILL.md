@@ -23,7 +23,7 @@ never. This job finds out first.
 | Check | How | Alert at once when |
 |---|---|---|
 | Site is up | `GET` the home page and main landing page | Status is not 200, or the response takes over 10 s |
-| Form delivers | Call the test entry point, then confirm the lead was stored and `ownerAlertedAt` is set | Not stored, or no alert after 5 minutes |
+| Form delivers | Call the test entry point, then confirm the lead was stored and `ownerAlertedAt` is set | Not stored, or no alert after 5 minutes. A 503 from the test route is a configuration error (`LEAD_TEST_SECRET` or `LEAD_TEST_INBOX` unset): alert the agency, and do not tell the owner the form is broken. |
 | Certificate | Read the TLS certificate and its expiry | Not valid for the hostname, or under 14 days left |
 | Domain | Expiry date from RDAP (auto-renew status is only in the registrar's account) | Under 30 days left |
 | Broken links | Fetch every URL in `sitemap.xml` and internal links on key pages | A page in the sitemap returns 4xx or 5xx |
@@ -132,16 +132,20 @@ import { wait } from "@trigger.dev/sdk"
 
 import { getLead } from "@/lib/leads"
 
-export async function formDelivers(site: string): Promise<boolean> {
+export type FormTestResult = "delivered" | "not-delivered" | "not-configured"
+
+export async function formDelivers(site: string): Promise<FormTestResult> {
   const response = await fetch(`${site}/api/leads/test`, {
     method: "POST",
     headers: { "x-lead-test-secret": process.env.LEAD_TEST_SECRET ?? "" },
   })
-  if (!response.ok) return false
-  const { id } = await response.json()
+  // The test route itself is not set up. Report that to the agency, not as a broken form.
+  if (response.status === 503) return "not-configured"
+  if (!response.ok) return "not-delivered"
+  const { id } = (await response.json()) as { id: string }
   await wait.for({ minutes: 5 })                        // Trigger.dev: no compute while waiting
   const lead = await getLead(id)
-  return !!lead?.ownerAlertedAt
+  return lead?.ownerAlertedAt ? "delivered" : "not-delivered"
 }
 ```
 
