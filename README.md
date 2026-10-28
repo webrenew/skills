@@ -12,7 +12,6 @@ We partner with [Vercel](https://vercel.com), [Blackbox.ai](https://blackbox.ai)
 | [seo-technical](./seo-technical) | Technical SEO implementation and audit — Metadata API, JSON-LD structured data, Open Graph, sitemaps, Core Web Vitals |
 | [accessibility-audit](./accessibility-audit) | WCAG 2.2 AA compliance audit and implementation — ARIA patterns, keyboard navigation, screen readers, testing |
 | [security-hardening](./security-hardening) | Security hardening and OWASP compliance — CSP, Auth.js, Server Action security, input validation, production checklist |
-| [cms-integration](./cms-integration) | Headless CMS integration patterns — Sanity, Contentful, Payload, draft mode, ISR webhooks, TypeScript codegen |
 | [vercel-marketing-analytics](./vercel-marketing-analytics) | Vercel Analytics event strategy — user journeys, funnels, CTA tracking, lead generation, and conversion measurement |
 | [asd-ste100-writing](./asd-ste100-writing) | Clear product copy with ASD-STE100 Simplified Technical English and benefit-first framing |
 | [dependabot-batch](./dependabot-batch) | Collapse many open Dependabot PRs into one branch and one PR — manifest edits, single lockfile regeneration, gates, held-back bumps |
@@ -54,7 +53,7 @@ Each skill starts with a `SKILL.md` file. Some packages also contain:
 Install one skill:
 
 ```bash
-npx skills add https://github.com/webrenew/skills --skill cms-integration
+npx skills add https://github.com/webrenew/skills --skill accessibility-audit
 ```
 
 Install all Webrenew skills:
