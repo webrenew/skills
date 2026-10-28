@@ -5,7 +5,8 @@ come from the same calendar table.
 
 ## CSV: `content-plan.csv`
 
-One row per item. Quote every field. Dates are `YYYY-MM-DD`.
+One row per item. Quote every field, and double any `"` inside a field (`""`), as RFC 4180
+asks; a field with a line break needs the same quotes. Dates are `YYYY-MM-DD`.
 
 ```csv
 "date","type","topic","intent","hub_page","first_hand_asset","owner_task","owner_due","status","score"

@@ -88,9 +88,12 @@ Write the proof bank as a table with the same columns as `ProofEntry`.
 
 ## Proof bank examples
 
-| id | type | summary | place | date | source | consent |
-|---|---|---|---|---|---|---|
-| job-2026-09-mtp-water-heater | job | Replaced a leaking 1998 40-gallon tank with a 50-gallon unit in one visit | Mount Pleasant | 2026-09-14 | Job #4471, 6 photos | written 2026-09-15 |
-| num-2025-jobs | number | 1,212 service calls in 2025 | | 2025-12-31 | Job system export, Jan 2026 | not-needed |
-| quote-dana-r | quote | "They showed me the old part and explained why it failed." | Summerville | 2026-08-02 | Google review link | written 2026-08-05 |
-| cred-master-plumber | credential | SC Master Plumber licence | | 2026-01-01 | State licence lookup link | not-needed |
+| id | type | summary | place | date | source | consent | useUntil |
+|---|---|---|---|---|---|---|---|
+| job-2026-09-mtp-water-heater | job | Replaced a leaking 1998 40-gallon tank with a 50-gallon unit in one visit | Mount Pleasant | 2026-09-14 | Job #4471, 6 photos | written 2026-09-15 | |
+| num-2025-jobs | number | 1,212 service calls in 2025 | | 2025-12-31 | Job system export, Jan 2026 | not-needed | 2026-12-31 |
+| quote-dana-r | quote | "They showed me the old part and explained why it failed." | Summerville | 2026-08-02 | Google review link | written 2026-08-05 | |
+| cred-master-plumber | credential | SC Master Plumber licence | | 2026-01-01 | State licence lookup link | not-needed | 2026-12-31 |
+
+`useUntil` is optional. Leave it empty for facts that do not go stale (a finished job, a
+quote); set it for prices, counts and licences, which need a check on that date.

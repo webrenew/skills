@@ -10,7 +10,7 @@ description: >
   week of updates from one article.
 ---
 
-# Repurpose: One Post Becomes a Week of Updates
+# Repurpose: One Post Becomes Two to Three Weeks of Updates
 
 **RULE: Each channel gets its own native post, written for how people read there, from facts
 already approved in the source post. Nothing new is claimed, and every link carries UTM tags.**
@@ -102,6 +102,7 @@ One burst on one day reaches fewer people than the same posts spread out. A samp
 | 8 | Short video | 45 seconds at the job, captions on |
 | 10 | Email | Only in the business's regular newsletter, if it has one |
 | 14 | Google Business Profile | A second angle: a different photo or the "when to call a pro" tip |
+| 18 | Nextdoor or LinkedIn | The channel not used on day 5, or a reader question from the comments |
 
 Move the days to fit the owner's own posting rhythm. Keep at least two days between posts on
 the same channel.

@@ -60,7 +60,9 @@ This is a spot check, not a ranking report. Answers change by person, place and 
 | **Merge** | Two or more posts answer the same question and split the visits | Move the best parts into the stronger URL; 308 redirect the others to it |
 | **Remove** | No leads, no visits, no links for 12 months, and no future value; or wrong and not worth fixing | Redirect (308) to the closest post or the hub page; delete only when nothing relates (then 410) |
 
-- A post with leads or calls is never removed or merged away. Refresh it.
+- A post with leads or calls is never removed. It can be merged only when it is the
+  surviving URL, or when the 308 redirect sends its traffic to a post that answers the same
+  question at least as well.
 - A post with good links from other sites keeps its URL or gets a 308 redirect.
 - When in doubt between refresh and remove, refresh once and check again in 3 months.
 
