@@ -27,8 +27,8 @@ businesses.
 |---|---|
 | Slug, title, category, published, updated | Launch: `list_posts`. Other sites: the sitemap or the CMS export. |
 | Hub service page | The post's main service link (`content-blog-post`, step 4) |
-| Leads | Leads whose `utm` data points to the post (`utm_campaign` or `utm_content` equal to the slug; `launch-lead-capture`), plus `Lead Submitted` events on the post's path (`vercel-marketing-analytics`) |
-| Calls | `Call Clicked` events on the post (`launch-landing-page`, `vercel-marketing-analytics`) |
+| Leads | Leads whose `utm` data points to the post (`utm_campaign` or `utm_content` equal to the slug; `launch-lead-capture`), plus `generate_lead` key events on the post's path (`Lead Submitted` on the site; `google-analytics`) |
+| Calls | `call_click` events on the post (`Call Clicked` on the site; `launch-landing-page`, `google-analytics`) |
 | Clicks, impressions, average position | Search Console, Pages report, filtered to the post URL |
 | Top 3 queries | Search Console, Queries for that page |
 | Change vs last period | Clicks and leads, up or down |
@@ -155,5 +155,5 @@ weekly email of the month, or on its own.
 - `content-blog-post`: structure and package rules for the refreshed post.
 - `content-voice-and-proof`: current prices, numbers and new proof.
 - `launch-site-health-report`: the weekly email this report can join.
-- `vercel-marketing-analytics`: the lead and call events by page.
+- `google-analytics`: the lead and call key events by page.
 - `seo-technical`: redirects, canonical URLs and the sitemap.
