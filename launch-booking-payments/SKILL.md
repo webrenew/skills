@@ -83,9 +83,9 @@ What each helper does to the shared lead (see `launch-lead-capture`, section 5):
 
 | Helper | Lead change |
 |---|---|
-| `markLeadBooked` | Find the lead by `leadId`, else by email (most recent `new` lead). Set `bookingUid` and status `booked`. That stops the follow-ups in `launch-speed-to-lead`. Do nothing if this `bookingUid` is already stored. |
-| `markBookingRescheduled` | Find the lead by `previousBookingUid`. Store the new `bookingUid` and time. Status stays `booked`. |
-| `markBookingCancelled` | Set status back to `new` and alert the owner ("Dana cancelled Thursday's visit"). Do not restart the automatic sequence; the owner decides whether to call. |
+| `markLeadBooked` | Find the lead by `leadId`, else by email (most recent open lead). Do nothing if this `bookingUid` is already stored. Store `bookingUid`, then `setStatus(id, "booked", { from: ["new", "contacted", "cancelled"] })`. That stops the follow-ups in `launch-speed-to-lead`. |
+| `markBookingRescheduled` | Find the lead whose `bookingUid` equals `previousBookingUid`. Store the new `bookingUid` and time. Status stays `booked`. |
+| `markBookingCancelled` | Only when the event's `uid` equals the lead's current `bookingUid`: `setStatus(id, "cancelled", { from: ["booked"] })`. Alert the owner once ("Dana cancelled Thursday's visit"), keyed on `bookingUid:cancelled`, because Cal retries. Follow-ups stay stopped; the owner decides whether to call. |
 
 ## 3. Payments with Stripe
 
@@ -108,7 +108,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 // The browser sends only a product key; the server owns the price.
 const PRODUCTS = ["deposit", "deep-clean"] as const
 const PRICES: Record<(typeof PRODUCTS)[number], string> = { deposit: "price_123", "deep-clean": "price_456" }
-const checkoutInput = z.object({ product: z.enum(PRODUCTS), leadId: z.uuid() })
+const checkoutInput = z.object({ product: z.enum(PRODUCTS), leadId: z.uuid() })   // lead ids are UUIDs
 
 // Server Actions are public endpoints: check the input at runtime, not only in TypeScript.
 export async function startCheckout(input: unknown) {

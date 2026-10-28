@@ -73,9 +73,10 @@ Use cheap invisible checks first. Add a CAPTCHA only if spam still gets through.
 4. **Rate limit** by IP (for example 5 submissions per 10 minutes).
 5. Only then, **Cloudflare Turnstile** or a similar low-friction challenge.
 
-A trapped submission gets the normal success state, so bots learn nothing, and it is
-**stored with status `spam`**, not dropped. The owner can review the spam list and rescue a
-real lead that tripped a trap.
+A trapped submission gets the normal success state, so bots learn nothing. If its fields
+are valid, it is **stored with status `spam`**, not dropped, so the owner can rescue a real
+lead that tripped a trap. A trapped submission that also fails validation has nothing usable
+to store and is discarded.
 
 ## 5. The lead model (shared by the whole Launch pack)
 
@@ -84,50 +85,66 @@ database, with these fields and statuses. Other skills refer to them by these na
 
 ```ts
 // lib/leads.ts
-export const LEAD_STATUSES = ["new", "contacted", "booked", "won", "lost", "spam"] as const
+export const LEAD_STATUSES = ["new", "contacted", "booked", "cancelled", "won", "lost", "spam"] as const
 export type LeadStatus = (typeof LEAD_STATUSES)[number]
 
 export interface Lead {
-  id: string
+  id: string                    // UUID
   createdAt: Date
   name: string
   email: string | null
   phone: string | null
   need: string
   town: string | null
-  status: LeadStatus            // only people and webhooks change it; agents never do
+  status: LeadStatus            // change it only through setStatus (rules below)
   spamReason: string | null     // "honeypot" | "too-fast" | "owner" when status is "spam"
-  isTest: boolean               // health-check leads: never counted, never followed up
+  isTest: boolean               // health-check leads: never counted, followed up or re-alerted
   marketingConsent: boolean
   consentAt: Date | null
   utm: Record<string, string>
-  ownerAlertedAt: Date | null   // set when the owner alert (plain or triage card) is sent
+  ownerAlertClaimedAt: Date | null  // set just before the owner alert is sent
+  ownerAlertedAt: Date | null       // set after the owner alert (plain or triage card) is sent
+  ownerReAlertedAt: Date | null     // set after the one 30-minute reminder
   repliedAt: Date | null        // set when the lead replies by email or text
   unsubscribedAt: Date | null
   unsubscribeToken: string      // random, unguessable
-  sentSteps: string[]           // follow-up steps already sent, e.g. ["confirmation", "check-in"]
-  bookingUid: string | null     // from launch-booking-payments
+  sentSteps: string[]           // customer messages already sent, e.g. ["confirmation", "check-in"]
+  bookingUid: string | null     // the current booking, from launch-booking-payments
 }
 ```
 
-| Status | Set by | Meaning |
+### Status rules
+
+A status moves only along these arrows. `setStatus(id, to, { from })` is a conditional
+update (`... where status = any(from)`), so a late event can never undo a later state. For
+example, a reply that arrives after the job is `won` does not change anything.
+
+| To | Allowed from | Set by |
 |---|---|---|
-| `new` | the form | Waiting for the business. Follow-ups run only in this status. |
-| `contacted` | the owner ("I talked to them"), or an inbound reply | A person is handling it. |
-| `booked` | the booking webhook | A time is booked. |
-| `won` / `lost` | the owner | The outcome. `won` starts the review request. |
-| `spam` | the bot traps or the owner | Kept in a spam list, never deleted. |
+| `new` | (created) | the form |
+| `contacted` | `new` | the owner ("I talked to them", or approving a reply), an inbound reply |
+| `booked` | `new`, `contacted`, `cancelled` | the booking webhook |
+| `cancelled` | `booked`, and only when the event's booking id equals `bookingUid` | the booking webhook |
+| `won`, `lost` | any status except `spam` | the owner. `won` starts the review request. |
+| `spam` | any status | the bot traps or the owner. Kept in a spam list, never deleted. |
+
+Customer follow-ups run only while the status is `new`. Agents never change a status.
+
+### Helpers
 
 The helpers that other skills call, and what each must do:
 
 | Helper | Does |
 |---|---|
 | `getLead(id)` | Returns the `Lead`, or `null`. |
-| `createLead(input, { isTest, spamReason })` | Stores the lead (status `spam` when `spamReason` is set) and returns the id. Used by the form and the health check. |
-| `markOwnerAlerted(id)` | Sets `ownerAlertedAt`. |
-| `listUnalertedLeads({ olderThanMinutes })` | Non-spam leads with no `ownerAlertedAt`, older than the given age. |
+| `createLead(input, { isTest, spamReason })` | Stores the lead (status `spam` when `spamReason` is set) and returns the id. |
+| `setStatus(id, to, { from })` | Conditional status change per the rules above. Returns whether it changed. |
+| `claimOwnerAlert(id)` | Atomically sets `ownerAlertClaimedAt` where it is null, or older than 15 minutes with no `ownerAlertedAt`. Returns whether this caller won the claim. |
+| `releaseOwnerAlert(id)`, `markOwnerAlerted(id)` | Clear the claim after a failed send; set `ownerAlertedAt` after a successful one. |
+| `listUnalertedLeads({ olderThanMinutes, newerThanHours })` | Non-spam leads with no `ownerAlertedAt`, in that age window. |
+| `listLeadsToReAlert()` | `status = new`, not `isTest`, `ownerAlertedAt` over 30 minutes ago, `ownerReAlertedAt` null. |
 | `recordStepSent(id, step)` | Adds `step` to `sentSteps` (atomic append, no duplicates). |
-| `markLeadBooked(...)`, `markBookingCancelled(...)` | See `launch-booking-payments`. |
+| `markLeadBooked`, `markBookingRescheduled`, `markBookingCancelled` | See `launch-booking-payments`. |
 | `nextBusinessMorning(from, businessDays)` | The next opening time after `businessDays` working days, in the business's time zone. |
 
 ## 6. Store first, then run one pipeline
@@ -184,7 +201,8 @@ export const leadInputSchema = z.object({
 
 | Message | Sent by | Skill |
 |---|---|---|
-| Owner alert | `lead-intake`: the triage card if triage is on and succeeds, otherwise the plain alert | this skill, `launch-lead-triage-agent` |
+| Owner alert | `sendOwnerAlert`, called by `lead-intake`: the triage card if triage is on and succeeds, otherwise the plain alert | this skill, `launch-lead-triage-agent` |
+| Owner reminder after 30 minutes (once, real leads still `new`) | `lead-intake-sweeper` | this skill |
 | Customer confirmation ("we got your request") | `lead-follow-up`, step `confirmation` | `launch-speed-to-lead` |
 | Personal first reply (answers their question) | the owner, after approving the triage draft | `launch-lead-triage-agent` |
 | Follow-ups and review request | `lead-follow-up`, `review-request` | `launch-speed-to-lead` |
@@ -208,14 +226,38 @@ export async function startLeadIntake(leadId: string) {
 ```
 
 ```ts
+// lib/owner-alerts.ts
+import { claimOwnerAlert, markOwnerAlerted, releaseOwnerAlert, type Lead } from "@/lib/leads"
+import type { PreparedTriage } from "@/lib/lead-triage-run"
+
+/**
+ * The only function that alerts the owner about a new lead. Claim first, so a retry or the
+ * sweeper cannot send a second alert on SMS or Slack, which have no idempotency keys.
+ */
+export async function sendOwnerAlert(lead: Lead, triage: PreparedTriage | null) {
+  if (!(await claimOwnerAlert(lead.id))) return "already"
+  try {
+    await deliverOwnerAlert(lead, triage)   // triage card if present, else the plain alert;
+                                            // test leads go to the test inbox
+  } catch (error) {
+    await releaseOwnerAlert(lead.id)         // let the retry send it
+    throw error
+  }
+  await markOwnerAlerted(lead.id)
+  return "sent"
+}
+```
+
+```ts
 // trigger/lead-intake.ts
 import { idempotencyKeys, schedules, schemaTask } from "@trigger.dev/sdk"
 import { z } from "zod"
 
-import { getLead, listUnalertedLeads } from "@/lib/leads"
-import { sendPlainOwnerAlert } from "@/lib/owner-alerts"
-import { leadFollowUp } from "./lead-follow-up"          // launch-speed-to-lead
-import { runTriageAndAlert } from "@/lib/lead-triage-run" // launch-lead-triage-agent (optional)
+import { getLead, listLeadsToReAlert, listUnalertedLeads } from "@/lib/leads"
+import { alertAgency, sendOwnerAlert, sendOwnerReminder } from "@/lib/owner-alerts"
+import { leadFollowUp } from "./lead-follow-up"              // launch-speed-to-lead
+// launch-lead-triage-agent. Without that skill, delete this import and the triage block.
+import { prepareTriage, type PreparedTriage } from "@/lib/lead-triage-run"
 
 const TRIAGE_ENABLED = process.env.LEAD_TRIAGE_ENABLED === "true"
 
@@ -234,39 +276,49 @@ export const leadIntake = schemaTask({
       })
     }
 
-    // Owner alert: exactly one. A failed triage falls back to the plain alert.
     if (lead.ownerAlertedAt) return { alerted: "already" }
+
+    // Triage only prepares the card. A triage failure means a plain alert, never two alerts.
+    let triage: PreparedTriage | null = null
     if (TRIAGE_ENABLED && !lead.isTest) {
       try {
-        await runTriageAndAlert(lead)
-        return { alerted: "triage" }
+        triage = await prepareTriage(lead)
       } catch (error) {
         console.error("triage failed, sending plain alert", leadId, error)
       }
     }
-    await sendPlainOwnerAlert(lead)   // test leads go to the test inbox; sets ownerAlertedAt
-    return { alerted: "plain" }
+    return { alerted: await sendOwnerAlert(lead, triage) }
   },
 })
 
-/** Safety net: a lead whose intake never started still reaches the owner. */
+/**
+ * Safety net, every 10 minutes:
+ * - restart intake for a lead whose alert never went out (up to 24 hours old);
+ * - report leads older than that to the agency once, instead of retrying forever;
+ * - send the one 30-minute reminder for real leads still waiting.
+ */
 export const leadIntakeSweeper = schedules.task({
   id: "lead-intake-sweeper",
   cron: "*/10 * * * *",
   run: async () => {
-    const leads = await listUnalertedLeads({ olderThanMinutes: 5 })
-    for (const lead of leads) {
+    const stuck = await listUnalertedLeads({ olderThanMinutes: 5, newerThanHours: 24 })
+    for (const lead of stuck) {
       await leadIntake.trigger({ leadId: lead.id }, {
         idempotencyKey: await idempotencyKeys.create(`lead-intake:${lead.id}`, { scope: "global" }),
       })
     }
-    return { restarted: leads.length }
+    await alertAgency(await listUnalertedLeads({ olderThanMinutes: 24 * 60, newerThanHours: 25 }))
+
+    const waiting = await listLeadsToReAlert()
+    for (const lead of waiting) await sendOwnerReminder(lead)   // sets ownerReAlertedAt; business hours only
+    return { restarted: stuck.length, reminded: waiting.length }
   },
 })
 ```
 
-Every sender sets its marker (`ownerAlertedAt`, `sentSteps`) after a successful send and
-checks it before sending, so a retried run never sends twice. Provider idempotency keys
+Every sender checks its marker before sending (`ownerAlertClaimedAt` and `ownerAlertedAt`
+for the owner, `sentSteps` for the customer) and sets it after a successful send, so a
+retried run never sends twice. Provider idempotency keys
 (Resend keeps them for 24 hours) are a second layer, not the only one.
 
 Adapt the storage to the project (Supabase, Postgres, a CRM API), but keep the order:
@@ -303,8 +355,8 @@ export async function POST(request: Request) {
 }
 ```
 
-`isTest` leads alert the test inbox instead of the owner, skip customer follow-ups, and are
-left out of every count and conversion report.
+`isTest` leads alert the test inbox instead of the owner, skip customer follow-ups and the
+reminder, and are left out of every count and conversion report.
 
 ## 7. Consent
 

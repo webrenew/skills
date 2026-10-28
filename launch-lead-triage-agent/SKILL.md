@@ -23,13 +23,14 @@ Read `launch-agent-guardrails` first. This skill applies those rules to one agen
 ```
 form stores lead (launch-lead-capture)
   -> Trigger.dev task "lead-intake" (launch-lead-capture)
-       -> runTriageAndAlert(lead)          (this skill, when LEAD_TRIAGE_ENABLED=true)
+       -> prepareTriage(lead)              (this skill, when LEAD_TRIAGE_ENABLED=true)
             -> load business profile (versioned)
             -> model call with structured output
             -> code checks (grounding, spam)
             -> store triage + draft
-            -> send the owner card: Approve / Edit / Reject   (sets ownerAlertedAt)
-       -> on any error: the plain owner alert instead
+       -> sendOwnerAlert(lead, triage)     (launch-lead-capture: one alert, ever)
+            -> the triage card: Approve / Edit / Reject
+            -> or, if triage failed, the plain alert
 owner approves -> send the personal reply (Resend)
 ```
 
@@ -152,29 +153,32 @@ Any reason other than `null` keeps the draft in the owner's queue, even for a re
 owner has made automatic. "Possible spam" shows in its own section of the owner's list; the
 owner decides, and only the owner sets status `spam`.
 
-## 4. Triage and alert (called by `lead-intake`)
+## 4. Prepare the card (called by `lead-intake`)
 
 ```ts
 // lib/lead-triage-run.ts
 import { businessProfile } from "@/lib/business-profile"
-import { markOwnerAlerted, saveTriage, type Lead } from "@/lib/leads"
-import { needsOwnerReview, TRIAGE_MODEL, triageLead } from "@/lib/lead-triage"
-import { sendTriageCard } from "@/lib/owner-alerts"
+import { saveTriage, type Lead } from "@/lib/leads"
+import { needsOwnerReview, TRIAGE_MODEL, triageLead, type Triage } from "@/lib/lead-triage"
 
-/** Throws on any failure, so `lead-intake` falls back to the plain alert. */
-export async function runTriageAndAlert(lead: Lead) {
+export interface PreparedTriage {
+  triage: Triage
+  reviewReason: string | null
+}
+
+/** Throws on any failure, so `lead-intake` sends the plain alert instead. Sends nothing. */
+export async function prepareTriage(lead: Lead): Promise<PreparedTriage> {
   const triage = await triageLead(lead)
   const reviewReason = needsOwnerReview(triage)
   await saveTriage(lead.id, { ...triage, reviewReason, model: TRIAGE_MODEL, profileVersion: businessProfile.version })
-  await sendTriageCard(lead, triage, reviewReason)   // Approve / Edit / Reject
-  await markOwnerAlerted(lead.id)
+  return { triage, reviewReason }
 }
 ```
 
-There is no separate triage task: `lead-intake` (see `launch-lead-capture`) calls this, so
-the owner gets exactly one alert per lead. If the model call fails, the lead is still stored
-and the owner still gets the plain alert. Triage improves delivery; it is never a dependency
-of it.
+Triage never sends the owner alert itself. `lead-intake` passes the prepared card to
+`sendOwnerAlert` (see `launch-lead-capture`), which claims the alert first, so the owner gets
+exactly one alert per lead even when a step fails and retries. If the model call fails, the
+owner still gets the plain alert. Triage improves delivery; it is never a dependency of it.
 
 ## 5. The owner's card
 
@@ -190,7 +194,9 @@ Draft: "Hi Dana, sorry about the leak. Water heater repairs start from $149, and
 ```
 
 Approve sends the draft through `sendEmail` (see `launch-speed-to-lead`) with the key
-`leadId:first-reply`, then records `first-reply` in `sentSteps` and sets status `contacted`.
+`leadId:first-reply`, then records `first-reply` in `sentSteps` and calls
+`setStatus(leadId, "contacted", { from: ["new"] })`. A lead that has already booked stays
+`booked`.
 Edit opens the text, then sends and stores the edit as the preferred answer. Reject asks for
 a reason from a short list.
 

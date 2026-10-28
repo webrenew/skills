@@ -71,7 +71,7 @@ one hop is a chain; fix it to point straight at the final URL.
 
 - [ ] Submit each form on production with a real entry, using an inbox you control. Confirm
   that the lead is stored, that the owner gets the alert, and that the confirmation arrives.
-  Then mark that lead `lost` (or delete it) so it does not count as a real lead.
+  Then set `isTest = true` on that lead so it stays out of every count and report.
 - [ ] Every phone number is a `tel:` link and dials the right number on a phone.
 - [ ] Booking and payment links open the live (not test) calendar or checkout.
 - [ ] The confirmation message says what happens next and when.

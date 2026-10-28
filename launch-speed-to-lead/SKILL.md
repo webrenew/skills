@@ -161,16 +161,17 @@ Ask every won customer the same way. Never filter by how happy they seem (see
 ### Phone-only leads
 
 The form allows a phone number without an email. Those leads get no emails, so the owner
-alert must say **"Call: no email given"** at the top, and the 30-minute re-alert below matters
+alert must say **"Call: no email given"** at the top, and the 30-minute reminder (see "Owner alert") matters
 most for them. Send texts only with explicit text consent (see "Text messages").
 
 ### Detect replies
 
 - Use a reply-to address on a domain with inbound email (Resend inbound, or the owner's
   mailbox with a forwarding rule to a webhook). On an inbound message from the lead's address,
-  set `repliedAt` and status `contacted`.
-- Give the owner one button in the alert email or dashboard: "I talked to them". It sets
-  status `contacted`, which stops the sequence.
+  set `repliedAt` and call `setStatus(id, "contacted", { from: ["new"] })`.
+- Give the owner one button in the alert email or dashboard: "I talked to them". It makes
+  the same status change, which stops the sequence. A lead that is already `booked` or `won`
+  keeps that status (see the status rules in `launch-lead-capture`).
 
 ## Owner alert
 
@@ -184,8 +185,9 @@ I talked to them: https://.../leads/123/contacted
 ```
 
 Send it by the channel the owner reads fastest: SMS or Slack for most trades, email for
-offices. Alert again (or alert a second person) if a lead is still `new` after 30 minutes in
-business hours.
+offices. The owner alert itself, and one reminder (or an alert to a second person) when a
+real lead is still `new` after 30 minutes in business hours, come from `lead-intake` and its
+sweeper in `launch-lead-capture`. Test leads never get the reminder.
 
 ## Text messages
 

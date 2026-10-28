@@ -24,7 +24,7 @@ never. This job finds out first.
 |---|---|---|
 | Site is up | `GET` the home page and main landing page | Status is not 200, or the response takes over 10 s |
 | Form delivers | Call the test entry point, then confirm the lead was stored and `ownerAlertedAt` is set | Not stored, or no alert after 5 minutes |
-| Certificate | Read the TLS certificate expiry | Under 14 days left |
+| Certificate | Read the TLS certificate and its expiry | Not valid for the hostname, or under 14 days left |
 | Domain | Expiry date from RDAP (auto-renew status is only in the registrar's account) | Under 30 days left |
 | Broken links | Fetch every URL in `sitemap.xml` and internal links on key pages | A page in the sitemap returns 4xx or 5xx |
 | `noindex` | Check robots meta and `robots.txt` on key pages | A production page says `noindex` |
@@ -74,14 +74,21 @@ service (Vercel, Better Stack, UptimeRobot, Checkly) and keep this job for the d
 ```ts
 import tls from "node:tls"
 
-export function certificateDaysLeft(host: string): Promise<number> {
+interface CertificateCheck {
+  daysLeft: number
+  valid: boolean             // false for expired, self-signed or wrong-hostname certificates
+  problem: string | null     // e.g. "CERT_HAS_EXPIRED", "ERR_TLS_CERT_ALTNAME_INVALID"
+}
+
+export function checkCertificate(host: string): Promise<CertificateCheck> {
   return new Promise((resolve, reject) => {
-    // rejectUnauthorized: false so an expired certificate reports negative days instead of
-    // throwing. We only read the certificate; no data is sent over this socket.
+    // rejectUnauthorized: false so a bad certificate is reported, not thrown. We only read
+    // the certificate; no data is sent over this socket.
     const socket = tls.connect({ host, port: 443, servername: host, rejectUnauthorized: false }, () => {
       const validTo = new Date(socket.getPeerCertificate().valid_to)
+      const problem = socket.authorized ? null : String(socket.authorizationError ?? "UNTRUSTED")
       socket.end()
-      resolve(Math.floor((validTo.getTime() - Date.now()) / 86_400_000))
+      resolve({ daysLeft: Math.floor((validTo.getTime() - Date.now()) / 86_400_000), valid: socket.authorized, problem })
     })
     socket.setTimeout(10_000, () => socket.destroy(new Error("TLS timeout")))
     socket.on("error", reject)
@@ -162,7 +169,7 @@ Needs attention
   We will fix it, or reply "ignore".
 
 Coming up
-• Domain renews automatically on 3 March 2027.
+• Domain expires on 3 March 2027. Check that auto-renew is on at the registrar.
 ```
 
 - When nothing needs attention, say so in the subject line. That is the best report.

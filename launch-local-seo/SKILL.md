@@ -4,8 +4,8 @@ description: >
   Get a small business found in local search and the Google map pack. Use this skill when a
   site serves customers in a city or service area (trades, clinics, salons, restaurants, law,
   real estate, home services) or when the user mentions local SEO, "near me" searches, ranking
-  on Google Maps, Google Business Profile, map pack, more Google reviews, service-area pages, NAP consistency, citations, reviews, or
-  LocalBusiness schema.
+  on Google Maps, Google Business Profile, map pack, more Google reviews, service-area pages,
+  NAP consistency, citations, reviews, or LocalBusiness schema.
 ---
 
 # Local SEO: Get Found by Customers Nearby
