@@ -75,7 +75,7 @@ import { businessProfile } from "@/lib/business-profile"
 import type { Lead } from "@/lib/leads"
 
 // Vercel AI Gateway id. Check the Gateway's model list for current ids before you deploy.
-export const TRIAGE_MODEL = "anthropic/claude-haiku-4.5"
+export const TRIAGE_MODEL = "anthropic/claude-haiku-5.5"
 
 const serviceKeys = businessProfile.services.map((s) => s.key) as [string, ...string[]]
 
