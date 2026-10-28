@@ -105,6 +105,7 @@ export interface Lead {
   ownerAlertClaimedAt: Date | null  // set just before the owner alert is sent
   ownerAlertedAt: Date | null       // set after the owner alert (plain or triage card) is sent
   ownerReAlertedAt: Date | null     // set after the one 30-minute reminder
+  agencyAlertedAt: Date | null      // set when a lead stuck for 24 hours is reported to the agency
   repliedAt: Date | null        // set when the lead replies by email or text
   unsubscribedAt: Date | null
   unsubscribeToken: string      // random, unguessable
@@ -139,10 +140,13 @@ The helpers that other skills call, and what each must do:
 | `getLead(id)` | Returns the `Lead`, or `null`. |
 | `createLead(input, { isTest, spamReason })` | Stores the lead (status `spam` when `spamReason` is set) and returns the id. |
 | `setStatus(id, to, { from })` | Conditional status change per the rules above. Returns whether it changed. |
-| `claimOwnerAlert(id)` | Atomically sets `ownerAlertClaimedAt` where it is null, or older than 15 minutes with no `ownerAlertedAt`. Returns whether this caller won the claim. |
+| `claimOwnerAlert(id)` | Atomically sets `ownerAlertClaimedAt` where it is null, or older than 3 minutes with no `ownerAlertedAt` (a crashed send). Returns whether this caller won the claim. |
 | `releaseOwnerAlert(id)`, `markOwnerAlerted(id)` | Clear the claim after a failed send; set `ownerAlertedAt` after a successful one. |
 | `listUnalertedLeads({ olderThanMinutes, newerThanHours })` | Non-spam leads with no `ownerAlertedAt`, in that age window. |
 | `listLeadsToReAlert()` | `status = new`, not `isTest`, `ownerAlertedAt` over 30 minutes ago, `ownerReAlertedAt` null. |
+| `deliverOwnerAlert(lead, triage)` | Sends the triage card, or the plain alert when `triage` is null, on the owner's channel (email, SMS or Slack); test leads go to the test inbox. Throws on failure. |
+| `sendOwnerReminder(lead)` | In business hours only: sends the one reminder (or alerts a second person), then sets `ownerReAlertedAt`. |
+| `alertAgency(leads)` | For each lead, claims `agencyAlertedAt` (set where null) and only then reports it to the agency, so each stuck lead is reported once. |
 | `recordStepSent(id, step)` | Adds `step` to `sentSteps` (atomic append, no duplicates). |
 | `markLeadBooked`, `markBookingRescheduled`, `markBookingCancelled` | See `launch-booking-payments`. |
 | `nextBusinessMorning(from, businessDays)` | The next opening time after `businessDays` working days, in the business's time zone. |
@@ -287,14 +291,20 @@ export const leadIntake = schemaTask({
         console.error("triage failed, sending plain alert", leadId, error)
       }
     }
-    return { alerted: await sendOwnerAlert(lead, triage) }
+    const alerted = await sendOwnerAlert(lead, triage)
+    // "already" with no ownerAlertedAt means another attempt holds the claim, or crashed
+    // mid-send. Fail so this run retries; the claim goes stale after 3 minutes.
+    if (alerted === "already" && !(await getLead(leadId))?.ownerAlertedAt) {
+      throw new Error("owner alert claimed but not sent yet")
+    }
+    return { alerted }
   },
 })
 
 /**
  * Safety net, every 10 minutes:
  * - restart intake for a lead whose alert never went out (up to 24 hours old);
- * - report leads older than that to the agency once, instead of retrying forever;
+ * - report leads older than that to the agency once (`alertAgency` claims `agencyAlertedAt`);
  * - send the one 30-minute reminder for real leads still waiting.
  */
 export const leadIntakeSweeper = schedules.task({
