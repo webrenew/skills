@@ -41,19 +41,40 @@ question. Triage never changes the lead's `status`; only the owner and webhooks 
 ## 1. The business profile
 
 The agent knows only what the profile says. Keep it in the database or in a typed config,
-with a version number that each triage records.
+with a version number that each triage records. It takes the business identity (name, phone,
+hours, service area) from `lib/business.ts` in `launch-local-seo`, so the site, the schema
+and the agent never disagree; `lib/business.ts` wins for those fields. The profile adds only
+what triage needs: the version, services with prices, the booking link, the tone and the
+phrases to avoid. Bump the version whenever either file changes.
 
 ```ts
 // lib/business-profile.ts
+import { business } from "@/lib/business"           // launch-local-seo: the one business identity
+
+/** "07:00" -> "7am", "18:30" -> "6:30pm": the form customers and drafts use. */
+function clockTime(time: string): string {
+  const [hour = 0, minute = 0] = time.split(":").map(Number)
+  const suffix = hour < 12 ? "am" : "pm"
+  return `${hour % 12 || 12}${minute ? `:${String(minute).padStart(2, "0")}` : ""}${suffix}`
+}
+
+const openingHours = business.hours
+  .map((slot) => `${slot.days[0]} to ${slot.days.at(-1)}, ${clockTime(slot.opens)} to ${clockTime(slot.closes)}`)
+  .join("; ")
+
 export const businessProfile = {
-  version: 7,
-  name: "Harbor Plumbing",
+  version: 8,
+  // Identity comes from lib/business.ts, which wins: change the name, phone, hours or area there.
+  name: business.name,
+  phone: business.phoneDisplay,
+  hours: openingHours,
+  serviceArea: business.areaServed,
+  // Triage-only facts.
   services: [
     { key: "water-heater", name: "Water heater repair and replacement", priceGuide: "Repairs from $149; replacement quoted on site" },
     { key: "drain", name: "Drain cleaning", priceGuide: "From $129" },
+    { key: "emergency", name: "Emergency call-outs, 24/7", priceGuide: `Call ${business.phoneDisplay}` },
   ],
-  serviceArea: ["Charleston", "Mount Pleasant", "Summerville"],
-  hours: "Mon–Fri 7am–6pm; emergency calls 24/7 at +1-843-555-0142",
   bookingUrl: "https://cal.com/harbor/visit",
   tone: "Friendly, direct, no jargon. Sign as Sam.",
   // Literal phrases. The prompt lists them, and code rejects a draft that contains one.
@@ -151,6 +172,7 @@ facts sends the draft to the owner.
 // Only the fact fields. Add a field here when the profile gains one.
 const PROFILE_TEXT = JSON.stringify({
   name: businessProfile.name,
+  phone: businessProfile.phone,
   services: businessProfile.services,
   serviceArea: businessProfile.serviceArea,
   hours: businessProfile.hours,
@@ -185,10 +207,10 @@ export function needsOwnerReview(triage: Triage): string | null {
   if (triage.missingInfo.length > 0) return "missing-info"
   if (hasForbiddenPhrase(triage.draftReply) || triage.usedFacts.some(hasForbiddenPhrase)) return "forbidden-phrase"
 
-  // A draft must rest on at least one real fact, and every fact must be in the profile.
+  // Every fact must be in the profile, and the draft must rest on at least one real fact.
   const facts = triage.usedFacts.map((fact) => fact.trim())
-  if (facts.length === 0 || facts.some((fact) => fact.length < MIN_FACT_LENGTH)) return "invented-fact"
   if (facts.some((fact) => !PROFILE_TEXT.includes(fact.toLowerCase()))) return "invented-fact"
+  if (facts.length === 0 || facts.some((fact) => fact.length < MIN_FACT_LENGTH)) return "weak-grounding"
 
   return findUngroundedClaim(triage.draftReply, facts)
 }
@@ -198,6 +220,18 @@ Relative days ("tomorrow") never appear in a profile, so a draft that offers one
 to the owner. That is deliberate. A claim with no number, such as "we also cover gutters", is
 caught only when the model lists it in `usedFacts`. That is one reason autonomy is earned one
 reply type at a time (see `launch-agent-guardrails`).
+
+The reasons, in the order the code checks them:
+
+| Reason | Means |
+|---|---|
+| `possible-spam` | The model thinks the enquiry is spam. Only the owner sets status `spam`. |
+| `fit` | Not a good fit, or outside the service area. |
+| `missing-info` | The owner must ask something before a quote. |
+| `forbidden-phrase` | The draft or a cited fact contains a `neverSay` phrase. |
+| `invented-fact` | A cited fact is not in the profile's fact fields. |
+| `weak-grounding` | No facts cited, or a cited fact is too short to prove anything (under 8 characters). |
+| `ungrounded-price`, `ungrounded-time`, `ungrounded-promise` | The draft states an amount, day, time or promise that its facts do not. |
 
 Any reason other than `null` keeps the draft in the owner's queue, even for a reply type the
 owner has made automatic. "Possible spam" shows in its own section of the owner's list; the
@@ -250,14 +284,15 @@ Design for a phone and for 10 seconds of attention:
 Dana Ruiz: water heater leaking into the garage since this morning.
 Ask: tank size, brand
 Draft: "Hi Dana, sorry about the leak. Water heater repairs start from $149, and we
-        handle emergency calls 24/7 at +1-843-555-0142. Book a visit: cal.com/harbor/visit"
+        handle emergency call-outs 24/7 at (843) 555-0142. Book a visit: cal.com/harbor/visit"
 [Approve and send]  [Edit]  [Reject]   Call: tel:+18435550199
 ```
 
 Approve sends the draft through `sendEmail` (see `launch-speed-to-lead`) with the key
 `leadId:first-reply`, then records `first-reply` in `sentSteps` and calls
 `setStatus(leadId, "contacted", { from: ["new"] })`. A lead that has already booked stays
-`booked`.
+`booked`. The follow-ups in `launch-speed-to-lead` keep running after this reply: they stop
+when the customer answers, books or opts out, not when the owner writes.
 Edit opens the text, then sends and stores the edit as the preferred answer. Reject asks for
 a reason from a short list.
 

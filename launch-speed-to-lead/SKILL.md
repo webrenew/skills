@@ -24,7 +24,7 @@ hour later. Most small businesses reply the next day, or never. Automation close
 |---|---|---|---|
 | Instant | Owner | New lead alert with name, need, and one-tap call and email links | The owner can call while the lead is still on the site |
 | Instant | Lead | Personal confirmation: what happens next, when, who; booking link; phone number | The lead stops shopping around |
-| +1 business day, if no reply or booking (and consent where needed, see "Email rules") | Lead | Short check-in that answers the most common question for their request | Restart the conversation |
+| +1 business day, if no reply or booking (and consent where needed, see "Email rules") | Lead | Short check-in "in case you have more questions", with the answer to the most common one for their request. It reads right whether or not the owner has replied in person. | Restart the conversation |
 | +3 business days | Lead | Proof: a relevant project, review or before-and-after | Build trust |
 | +7 business days | Lead | "Close the loop": should we keep your request open? | A clear yes or no |
 | 1 day after the owner marks the job `won` | Customer | Thank-you and review request (see "Review request after a won job") | Reviews |
@@ -41,8 +41,9 @@ goes out even after a reply. It still stops for spam, an unsubscribe, a test lea
 marked `possibleSpam`.
 
 - The lead replied (`repliedAt` is set).
-- The status is no longer `new`: the owner contacted them, they booked (see
-  `launch-booking-payments`), or the owner marked the lead won, lost or spam.
+- The status is not `new` or `contacted`: they booked (see `launch-booking-payments`), their
+  booking was cancelled, or the owner marked the lead won, lost or spam. The owner's own
+  reply (status `contacted`) does not stop the sequence; the customer's answer does.
 - The lead unsubscribed (`unsubscribedAt` is set).
 - The lead is marked `possibleSpam` and the owner has not tapped "Not spam" yet.
 - The lead is marked `isTest` (for example a launch test entry, marked after it was sent).
@@ -60,8 +61,10 @@ idempotency key. Do not start it from anywhere else.
 // lib/send-email.ts
 import { Resend } from "resend"
 
+import { business } from "@/lib/business"
+
 const resend = new Resend(process.env.RESEND_API_KEY)
-const SITE = "https://harborplumbing.com"
+const SITE = business.url                              // launch-local-seo
 
 /** The footer link and the List-Unsubscribe header use this one URL. Tokens can hold + / =. */
 export function unsubscribeUrl(token: string) {
@@ -96,8 +99,13 @@ const FOLLOW_UPS = [
   { key: "close-loop", afterBusinessDays: 7, email: closeLoopEmail },
 ] as const
 
+// The owner's reply moves a lead to "contacted" and keeps the sequence going. The customer's
+// reply (repliedAt), a booking, an opt-out and the final statuses stop it.
+const FOLLOW_UP_STATUSES = new Set<Lead["status"]>(["new", "contacted"])
+
 function stillWaiting(lead: Lead | null): lead is Lead & { email: string } {
-  if (!lead?.email || lead.status !== "new" || lead.isTest || lead.repliedAt || lead.unsubscribedAt || lead.possibleSpam) return false
+  if (!lead?.email || !FOLLOW_UP_STATUSES.has(lead.status)) return false
+  if (lead.isTest || lead.repliedAt || lead.unsubscribedAt || lead.possibleSpam) return false
   return !FOLLOW_UPS_NEED_CONSENT || lead.marketingConsent
 }
 
@@ -230,8 +238,9 @@ most for them. Send texts only with explicit text consent (see "Text messages").
 - Use a reply-to address on a domain with inbound email (Resend inbound, or the owner's
   mailbox with a forwarding rule to a webhook). On an inbound message from the lead's address,
   set `repliedAt` and call `setStatus(id, "contacted", { from: ["new"] })`.
-- Give the owner one button in the alert email or dashboard: "I talked to them". It makes
-  the same status change, which stops the sequence. A lead that is already `booked` or `won`
+- Give the owner one button in the alert email or dashboard: "I talked to them". A
+  conversation counts as their reply: it sets `repliedAt` and makes the same status change,
+  which stops the sequence. A lead that is already `booked` or `won`
   keeps that status (see the status rules in `launch-lead-capture`).
 
 ## Owner alert

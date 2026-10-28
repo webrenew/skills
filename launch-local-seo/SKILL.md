@@ -27,7 +27,9 @@ copies drift, and drift costs rankings.
 export const business = {
   name: "Harbor Plumbing",                 // exactly as on the storefront and GBP, no keywords
   type: "Plumber",                         // most specific schema.org LocalBusiness subtype
-  phone: "+1-843-555-0142",                // E.164 for schema; format for display separately
+  url: "https://harborplumbing.com",      // the canonical origin
+  phoneE164: "+18435550142",               // schema telephone and every tel: link
+  phoneDisplay: "(843) 555-0142",          // what people read on the page
   email: "hello@harborplumbing.com",
   address: { street: "12 King St", city: "Charleston", region: "SC", postalCode: "29401", country: "US" },
   geo: { latitude: 32.7765, longitude: -79.9311 },
@@ -54,8 +56,8 @@ export function LocalBusinessJsonLd() {
     "@context": "https://schema.org",
     "@type": business.type,
     name: business.name,
-    url: "https://harborplumbing.com",
-    telephone: business.phone,
+    url: business.url,
+    telephone: business.phoneE164,
     email: business.email,
     address: {
       "@type": "PostalAddress",
@@ -93,8 +95,9 @@ Customers search "service + place": "water heater repair Charleston".
   housing stock). Pages that swap only the city name are doorway pages. Google demotes them.
   If the owner cannot supply local substance, list the areas on one "Areas we serve" page.
 - **Title pattern:** `{Service} in {City} | {Business name}`. Keep it under about 60 characters.
-- **Click-to-call** on every page: `<a href="tel:+18435550142">`. On mobile, a call is often
-  the conversion.
+- **Click-to-call** on every page:
+  `<a href={`tel:${business.phoneE164}`}>{business.phoneDisplay}</a>`. On mobile, a call is
+  often the conversion.
 
 ## 4. Google Business Profile (the owner does this; you prepare it)
 

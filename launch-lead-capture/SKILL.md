@@ -147,7 +147,10 @@ example, a reply that arrives after the job is `won` does not change anything.
 | `won`, `lost` | any status except `spam` | the owner. `won` starts the review request. |
 | `spam` | any status | the honeypot or the owner. Kept in a spam list, never deleted. |
 
-Customer follow-ups run only while the status is `new`. Agents never change a status.
+Customer follow-ups run while the status is `new` or `contacted`. They stop when the lead
+replies, books, opts out, or the status becomes `booked`, `cancelled`, `won`, `lost` or `spam`
+(see `launch-speed-to-lead`). The owner's own reply does not stop them. Agents never change a
+status.
 
 ### Helpers
 
@@ -187,9 +190,13 @@ import { allowSubmission } from "@/lib/rate-limit"
 type Trap = "honeypot" | "too-fast"
 
 /**
- * The client address that the platform sets, or null. On Vercel that is `x-real-ip`. Otherwise
- * use the last `x-forwarded-for` hop, which your own proxy appended; the first hop is whatever
- * the client sent. This assumes exactly one proxy in front of the app.
+ * The client address that the platform sets, or null. Read the header your host overwrites:
+ * `x-real-ip` on Vercel, `cf-connecting-ip` on Cloudflare. Otherwise use the last
+ * `x-forwarded-for` hop, which your own proxy appended; the first hop is whatever the client
+ * sent. This assumes exactly one proxy in front of the app.
+ *
+ * If the host passes a header through unchanged, the client controls it, and the limit only
+ * slows naive bots. The honeypot and the time trap stay the real controls.
  */
 function clientAddress(requestHeaders: Headers): string | null {
   const realIp = requestHeaders.get("x-real-ip")?.trim()
