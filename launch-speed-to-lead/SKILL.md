@@ -24,7 +24,7 @@ hour later. Most small businesses reply the next day, or never. Automation close
 |---|---|---|---|
 | Instant | Owner | New lead alert with name, need, and one-tap call and email links | The owner can call while the lead is still on the site |
 | Instant | Lead | Personal confirmation: what happens next, when, who; booking link; phone number | The lead stops shopping around |
-| +1 business day, if no reply or booking | Lead | Short check-in that answers the most common question for their request | Restart the conversation |
+| +1 business day, if no reply or booking (and consent where needed, see "Email rules") | Lead | Short check-in that answers the most common question for their request | Restart the conversation |
 | +3 business days | Lead | Proof: a relevant project, review or before-and-after | Build trust |
 | +7 business days | Lead | "Close the loop": should we keep your request open? | A clear yes or no |
 | 1 day after the owner marks the job `won` | Customer | Thank-you and review request (see "Review request after a won job") | Reviews |
@@ -41,6 +41,8 @@ Check all of these before **every** send, not only at the start:
 - The status is no longer `new`: the owner contacted them, they booked (see
   `launch-booking-payments`), or the owner marked the lead won, lost or spam.
 - The lead unsubscribed (`unsubscribedAt` is set).
+- The lead is marked `possibleSpam` and the owner has not tapped "Not spam" yet.
+- A follow-up needs marketing consent here and `marketingConsent` is false (see "Email rules").
 - The send would land outside business hours for a follow-up (instant replies are fine at
   any hour; follow-ups wait for the morning in the business's time zone).
 
@@ -55,6 +57,12 @@ idempotency key. Do not start it from anywhere else.
 import { Resend } from "resend"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
+const SITE = "https://harborplumbing.com"
+
+/** The footer link and the List-Unsubscribe header use this one URL. Tokens can hold + / =. */
+export function unsubscribeUrl(token: string) {
+  return `${SITE}/unsubscribe?token=${encodeURIComponent(token)}`
+}
 
 /** Resend returns `{ data, error }` and does not throw. Throw, so the task retries. */
 export async function sendEmail(payload: Parameters<typeof resend.emails.send>[0], idempotencyKey: string) {
@@ -70,11 +78,13 @@ import { schemaTask, wait } from "@trigger.dev/sdk"
 import { z } from "zod"
 
 import { getLead, nextBusinessMorning, recordStepSent, type Lead } from "@/lib/leads"
-import { sendEmail } from "@/lib/send-email"
+import { sendEmail, unsubscribeUrl } from "@/lib/send-email"
 import { checkInEmail, closeLoopEmail, confirmationEmail, proofEmail } from "@/emails/lead-sequence"
 
 const FROM = "Sam at Harbor Plumbing <sam@harborplumbing.com>"
-const SITE = "https://harborplumbing.com"
+// UK and EU: true (follow-ups only with marketing consent). A US business that relies on
+// CAN-SPAM can set FOLLOW_UPS_NEED_CONSENT=false. See "Email rules".
+const FOLLOW_UPS_NEED_CONSENT = process.env.FOLLOW_UPS_NEED_CONSENT !== "false"
 
 const FOLLOW_UPS = [
   { key: "check-in", afterBusinessDays: 1, email: checkInEmail },
@@ -83,7 +93,8 @@ const FOLLOW_UPS = [
 ] as const
 
 function stillWaiting(lead: Lead | null): lead is Lead & { email: string } {
-  return !!lead && lead.status === "new" && !lead.repliedAt && !lead.unsubscribedAt && !!lead.email
+  if (!lead?.email || lead.status !== "new" || lead.repliedAt || lead.unsubscribedAt || lead.possibleSpam) return false
+  return !FOLLOW_UPS_NEED_CONSENT || lead.marketingConsent
 }
 
 export const leadFollowUp = schemaTask({
@@ -92,7 +103,7 @@ export const leadFollowUp = schemaTask({
   retry: { maxAttempts: 5, minTimeoutInMs: 30_000, maxTimeoutInMs: 600_000, factor: 2 },
   run: async ({ leadId }) => {
     const first = await getLead(leadId)
-    if (!first?.email || first.isTest) return { sent: [] }
+    if (!first?.email || first.isTest || first.possibleSpam) return { sent: [] }
 
     // A retry starts run() again from the top. `sentSteps` makes every step run once.
     if (!first.sentSteps.includes("confirmation")) {
@@ -108,7 +119,7 @@ export const leadFollowUp = schemaTask({
       await sendEmail({
         from: FROM, to: lead.email, subject: step.email.subject(lead), react: step.email.body(lead),
         headers: {
-          "List-Unsubscribe": `<${SITE}/unsubscribe?token=${lead.unsubscribeToken}>`,
+          "List-Unsubscribe": `<${unsubscribeUrl(lead.unsubscribeToken)}>`,
           "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
         },
       }, `${leadId}:${step.key}`)
@@ -123,6 +134,44 @@ export const leadFollowUp = schemaTask({
 Waits in Trigger.dev do not use compute while they sleep, so a seven-day sequence costs the
 same as an instant one. `wait.until` with a past date returns at once, which is why every
 step checks `sentSteps` before it sends.
+
+### The unsubscribe route
+
+`List-Unsubscribe-Post` tells mailbox providers that the URL accepts a one-click `POST`
+(RFC 8058) and answers 200 with no redirect. Build that route. Its `GET` asks first, so a link
+scanner that opens the footer link does not unsubscribe anyone.
+
+```ts
+// app/unsubscribe/route.ts
+import { unsubscribeByToken } from "@/lib/leads"
+
+function page(body: string) {
+  return new Response(
+    `<!doctype html><meta name="viewport" content="width=device-width"><title>Unsubscribe</title>` +
+      `<main style="font:16px system-ui;max-width:32rem;margin:4rem auto;padding:0 1rem">${body}</main>`,
+    { headers: { "content-type": "text/html; charset=utf-8" } },
+  )
+}
+
+// The footer link: confirm with one button.
+export function GET(request: Request) {
+  const token = new URL(request.url).searchParams.get("token") ?? ""
+  return page(
+    `<p>Stop follow-up emails from Harbor Plumbing?</p>` +
+      `<form method="post" action="/unsubscribe?token=${encodeURIComponent(token)}"><button>Unsubscribe</button></form>`,
+  )
+}
+
+// The button above, and the mailbox's one-click unsubscribe. Always 200, never a redirect.
+export async function POST(request: Request) {
+  const token = new URL(request.url).searchParams.get("token") ?? ""
+  if (token) await unsubscribeByToken(token)
+  return page("<p>You are unsubscribed. We will not email you again about this request.</p>")
+}
+```
+
+The answer is the same for an unknown token, so the route tells nobody which tokens exist.
+The footer link in every follow-up uses `unsubscribeUrl(lead.unsubscribeToken)` too.
 
 ### Review request after a won job
 
@@ -204,6 +253,11 @@ Text gets the fastest replies, and it has the strictest rules:
 - Follow-up and marketing emails include an unsubscribe link and the business's postal
   address (CAN-SPAM in the US; similar rules elsewhere). The direct reply to their enquiry is
   transactional.
+- **Legal basis.** The confirmation answers the customer's own request, so it needs no
+  marketing consent. The check-in, proof and close-the-loop emails go beyond that reply. In
+  the US, CAN-SPAM allows them with an unsubscribe link and the postal address. In the UK and
+  EU, send them only to leads with `marketingConsent`, unless the business's adviser confirms
+  that the soft opt-in covers them. `FOLLOW_UPS_NEED_CONSENT` (on by default) enforces this.
 - Send from the business's own domain with SPF, DKIM and DMARC set, or the emails land in spam.
 - Never add a lead to a newsletter without the marketing consent from the form.
 

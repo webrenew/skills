@@ -52,7 +52,18 @@ that serves a fixed area).
 
 <label htmlFor="phone">Phone</label>
 <input id="phone" name="phone" type="tel" autoComplete="tel" inputMode="tel" />
+
+{/* Bot traps (section 4). Send both with the other values. */}
+<div aria-hidden="true" style={{ position: "absolute", left: "-10000px" }}>
+  <label htmlFor="website">Website</label>
+  <input id="website" name="website" tabIndex={-1} autoComplete="off" />
+</div>
+<input type="hidden" name="startedAt" value={startedAt} />
 ```
+
+Set `startedAt` after the form mounts, so the server and the browser render the same HTML:
+`const [startedAt, setStartedAt] = useState("")` and
+`useEffect(() => setStartedAt(String(Date.now())), [])`. An empty value never trips the trap.
 
 - A visible label above each field. Placeholders are not labels.
 - `autoComplete` values let the phone fill the form in one tap.
@@ -73,10 +84,16 @@ Use cheap invisible checks first. Add a CAPTCHA only if spam still gets through.
 4. **Rate limit** by IP (for example 5 submissions per 10 minutes).
 5. Only then, **Cloudflare Turnstile** or a similar low-friction challenge.
 
-A trapped submission gets the normal success state, so bots learn nothing. If its fields
-are valid, it is **stored with status `spam`**, not dropped, so the owner can rescue a real
-lead that tripped a trap. A trapped submission that also fails validation has nothing usable
-to store and is discarded.
+The two traps are not equally sure:
+
+- **Honeypot: strong signal.** A person never sees the field. The submission gets the normal
+  success state, so bots learn nothing. If its fields are valid, it is stored with status
+  `spam` (not dropped) and nobody is alerted. If they are not valid, it is discarded.
+- **Time trap: weak signal.** Autofill can make a real person that fast. The lead is stored
+  as `new` with `possibleSpam: true`, and the owner gets an alert labelled **"Possible
+  spam"** with two one-tap actions: "Not spam" and "Spam". The customer gets no messages
+  until the owner taps "Not spam". Validation errors show as usual, because the sender may be
+  a person.
 
 ## 5. The lead model (shared by the whole Launch pack)
 
@@ -97,10 +114,11 @@ export interface Lead {
   need: string
   town: string | null
   status: LeadStatus            // change it only through setStatus (rules below)
-  spamReason: string | null     // "honeypot" | "too-fast" | "owner" when status is "spam"
+  spamReason: string | null     // "honeypot" | "owner" when status is "spam"
+  possibleSpam: boolean         // the time trap fired: the owner decides; no customer messages until then
   isTest: boolean               // health-check leads: never counted, followed up or re-alerted
   marketingConsent: boolean
-  consentAt: Date | null
+  consentAt: Date | null        // set by the server when marketingConsent is true, never from the request
   utm: Record<string, string>
   ownerAlertClaimedAt: Date | null  // set just before the owner alert is sent
   ownerAlertedAt: Date | null       // set after the owner alert (plain or triage card) is sent
@@ -127,7 +145,7 @@ example, a reply that arrives after the job is `won` does not change anything.
 | `booked` | `new`, `contacted`, `cancelled` | the booking webhook |
 | `cancelled` | `booked`, and only when the event's booking id equals `bookingUid` | the booking webhook |
 | `won`, `lost` | any status except `spam` | the owner. `won` starts the review request. |
-| `spam` | any status | the bot traps or the owner. Kept in a spam list, never deleted. |
+| `spam` | any status | the honeypot or the owner. Kept in a spam list, never deleted. |
 
 Customer follow-ups run only while the status is `new`. Agents never change a status.
 
@@ -138,13 +156,15 @@ The helpers that other skills call, and what each must do:
 | Helper | Does |
 |---|---|
 | `getLead(id)` | Returns the `Lead`, or `null`. |
-| `createLead(input, { isTest, spamReason })` | Stores the lead (status `spam` when `spamReason` is set) and returns the id. |
+| `createLead(input, { isTest, trap })` | Stores the lead and returns the id. `trap` is `"honeypot"` (status `spam`, `spamReason` `honeypot`), `"too-fast"` (status `new`, `possibleSpam` true) or `null`. Sets `consentAt` to the current time when `marketingConsent` is true, else null. The request never supplies `consentAt`. |
+| `confirmNotSpam(id)` | The owner's "Not spam" tap: clears `possibleSpam` where it is set, and only then starts `lead-follow-up` with the same global key that `lead-intake` uses. |
 | `setStatus(id, to, { from })` | Conditional status change per the rules above. Returns whether it changed. |
 | `claimOwnerAlert(id)` | Atomically sets `ownerAlertClaimedAt` where it is null, or older than 3 minutes with no `ownerAlertedAt` (a crashed send). Returns whether this caller won the claim. |
 | `releaseOwnerAlert(id)`, `markOwnerAlerted(id)` | Clear the claim after a failed send; set `ownerAlertedAt` after a successful one. |
 | `listUnalertedLeads({ olderThanMinutes, newerThanHours?, notReportedToAgency? })` | Leads that are not `spam`, not `isTest` and have no `ownerAlertedAt`, older than `olderThanMinutes` (and newer than `newerThanHours` when given). With `notReportedToAgency`, only those with `agencyAlertedAt` null. A broken test alert is the health check's job, not the sweeper's. |
-| `listLeadsToReAlert()` | `status = new`, not `isTest`, `ownerAlertedAt` over 30 minutes ago, `ownerReAlertedAt` null. |
-| `deliverOwnerAlert(lead, triage)` | Sends the triage card, or the plain alert when `triage` is null, on the owner's channel (email, SMS or Slack); test leads go to the test inbox. Throws on failure. |
+| `listLeadsToReAlert()` | `status = new`, not `isTest`, not `possibleSpam`, `ownerAlertedAt` over 30 minutes ago, `ownerReAlertedAt` null. |
+| `deliverOwnerAlert(lead, triage)` | Sends the triage card, or the plain alert when `triage` is null, on the owner's channel (email, SMS or Slack); test leads go to the test inbox. A `possibleSpam` lead is labelled "Possible spam", with "Not spam" (`confirmNotSpam`) and "Spam" (`setStatus(id, "spam", ...)`) actions. Throws on failure. |
+| `unsubscribeByToken(token)` | Sets `unsubscribedAt` where `unsubscribeToken` matches and `unsubscribedAt` is null. See `launch-speed-to-lead`. |
 | `sendOwnerReminder(lead)` | In business hours only: sends the one reminder (or alerts a second person), then sets `ownerReAlertedAt`. |
 | `alertAgency(leads)` | For each lead, claims `agencyAlertedAt` (set where null) and only then reports it to the agency, so each stuck lead is reported once. |
 | `recordStepSent(id, step)` | Adds `step` to `sentSteps` (atomic append, no duplicates). |
@@ -157,12 +177,16 @@ The helpers that other skills call, and what each must do:
 // app/contact/actions.ts
 "use server"
 
+import { headers } from "next/headers"
 import { z } from "zod"
 
 import { createLead, leadInputSchema } from "@/lib/leads"
 import { startLeadIntake } from "@/lib/lead-intake"
+import { allowSubmission } from "@/lib/rate-limit"
 
-function botReason(input: unknown): string | null {
+type Trap = "honeypot" | "too-fast"
+
+function botTrap(input: unknown): Trap | null {
   const fields = (input ?? {}) as { website?: unknown; startedAt?: unknown }
   if (typeof fields.website === "string" && fields.website !== "") return "honeypot"
   const startedAt = Number(fields.startedAt)
@@ -171,19 +195,32 @@ function botReason(input: unknown): string | null {
 }
 
 export async function submitLead(input: unknown) {
-  const parsed = leadInputSchema.safeParse(input)
-  const spamReason = botReason(input)
-
-  // A trapped submission looks like success to the sender, but it is still stored, as spam,
-  // so a fast autofill by a real person is never lost.
-  if (!parsed.success) {
-    return spamReason ? { ok: true as const } : { ok: false as const, errors: z.flattenError(parsed.error).fieldErrors }
+  // A Server Action has no IP of its own: read the client IP from the platform's header.
+  const ip = (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown"
+  if (!(await allowSubmission(`lead:${ip}`, { limit: 5, windowSeconds: 600 }))) {
+    return { ok: false as const, errors: {}, message: "Too many tries. Please call us instead." }
   }
 
-  const id = await createLead(parsed.data, { isTest: false, spamReason })
-  if (!spamReason) await startLeadIntake(id)
+  const parsed = leadInputSchema.safeParse(input)
+  const trap = botTrap(input)
+
+  if (!parsed.success) {
+    // Only a honeypot hit fakes success. A fast sender may be a person who needs the errors.
+    if (trap === "honeypot") return { ok: true as const }
+    return { ok: false as const, errors: z.flattenError(parsed.error).fieldErrors }
+  }
+
+  // A honeypot lead is stored as spam with no alert. A "too-fast" lead runs the pipeline as
+  // possible spam, so the owner sees it and decides.
+  const id = await createLead(parsed.data, { isTest: false, trap })
+  if (trap !== "honeypot") await startLeadIntake(id)
   return { ok: true as const }
 }
+```
+
+`allowSubmission` is a small counter keyed by IP, in Redis (for example Upstash) or the
+database. If the platform firewall already rate-limits POSTs to the form's page (for example
+a Vercel WAF rule), you can rely on that and remove the call. Show `message` above the form.
 ```
 
 ```ts
@@ -196,7 +233,10 @@ export const leadInputSchema = z.object({
   town: z.string().trim().max(100).optional(),
   marketingConsent: z.boolean(),
   utm: z.record(z.string(), z.string().max(200)).optional(),
-}).refine((lead) => lead.email || lead.phone, { message: "Add an email or a phone number." })
+}).refine((lead) => lead.email || lead.phone, {
+  message: "Add an email or a phone number.",
+  path: ["email"],   // a refine without a path lands in formErrors, which the form does not show
+})
 ```
 
 ### One orchestrator, one owner of each message
@@ -276,8 +316,9 @@ export const leadIntake = schemaTask({
     if (!lead) throw new Error(`lead ${leadId} not found`)
     if (lead.status === "spam") return { skipped: "spam" }
 
-    // Customer messages: one sequence per lead, ever (global key, 30-day TTL).
-    if (!lead.isTest && lead.email) {
+    // Customer messages: one sequence per lead, ever (global key, 30-day TTL). A possible-spam
+    // lead waits for the owner's "Not spam" tap (`confirmNotSpam` starts the sequence then).
+    if (!lead.isTest && !lead.possibleSpam && lead.email) {
       await leadFollowUp.trigger({ leadId }, {
         idempotencyKey: await idempotencyKeys.create(`lead-follow-up:${leadId}`, { scope: "global" }),
       })
@@ -287,7 +328,7 @@ export const leadIntake = schemaTask({
 
     // Triage only prepares the card. A triage failure means a plain alert, never two alerts.
     let triage: PreparedTriage | null = null
-    if (TRIAGE_ENABLED && !lead.isTest) {
+    if (TRIAGE_ENABLED && !lead.isTest && !lead.possibleSpam) {
       try {
         triage = await prepareTriage(lead)
       } catch (error) {
@@ -370,7 +411,7 @@ export async function POST(request: Request) {
   if (!authorized(request.headers.get("x-lead-test-secret"))) return new Response("forbidden", { status: 403 })
   const id = await createLead(
     { name: "Health check", email: process.env.LEAD_TEST_INBOX ?? "", need: "Automated form test", marketingConsent: false },
-    { isTest: true, spamReason: null },
+    { isTest: true, trap: null },
   )
   await startLeadIntake(id)
   return Response.json({ id })
@@ -385,7 +426,9 @@ reminder, and are left out of every count and conversion report.
 - Answering the enquiry needs no extra consent. Marketing does.
 - Use a separate marketing checkbox, **unchecked by default**, with plain words: "Send me
   occasional offers. You can unsubscribe at any time."
-- Store the choice and the time with the lead. Never send marketing to a lead without it.
+- Store the choice and the time with the lead. `createLead` sets `consentAt` on the server
+  when `marketingConsent` is true; never take the time from the request. Never send marketing
+  to a lead without it.
 
 ## 8. Track the conversion only after success
 

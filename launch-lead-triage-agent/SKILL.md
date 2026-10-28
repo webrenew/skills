@@ -185,7 +185,9 @@ reply type at a time (see `launch-agent-guardrails`).
 
 Any reason other than `null` keeps the draft in the owner's queue, even for a reply type the
 owner has made automatic. "Possible spam" shows in its own section of the owner's list; the
-owner decides, and only the owner sets status `spam`.
+owner decides, and only the owner sets status `spam`. Leads that the form's time trap marks
+`possibleSpam` skip triage and go to the same section with a plain alert (see
+`launch-lead-capture`, section 4).
 
 ## 4. Prepare the card (called by `lead-intake`)
 
