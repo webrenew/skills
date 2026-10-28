@@ -62,8 +62,10 @@ These topics can hurt a reader who follows bad advice. Google's quality guidelin
   post ("Reviewed by Dr. Ana Ruiz, DDS").
 - Cite the authority (the regulator, the code, the official guidance), with a link.
 - Include an honest "when to call a licensed pro" section.
-- No DIY steps for work that is dangerous or needs a permit (gas, electrical panels,
-  structural work, roofing at height). Explain the risk and stop.
+- No DIY steps for work that is dangerous or needs a permit (gas lines, venting, panel
+  internals, structural work, roofing at height). Explain the risk and stop. Owner-level
+  shutoffs that the manufacturer describes are fine: an appliance's own gas control to
+  "pilot", a breaker, the main water valve.
 - Follow the industry's advertising rules (dental and medical boards, the state bar for
   attorneys, financial regulators).
 - No client or patient details without written authorization. A clinic needs HIPAA-compliant
@@ -91,8 +93,8 @@ One pass per concern. A pass that tries to fix everything fixes nothing.
 ## 4. Search and AI-answer checks
 
 These checks apply to posts, case studies and pages. A channel post (social, Google Business
-Profile, email) skips them: check it against its channel's limits in
-`content-repurpose/references/channel-formats.md`, its link and UTM tags, and steps 1, 3, 5
+Profile, email) skips them: check it against its channel's limits in the
+`content-repurpose` skill (its `references/channel-formats.md`), its link and UTM tags, and steps 1, 3, 5
 and 6.
 
 | Check | Pass when |

@@ -27,7 +27,7 @@ businesses.
 |---|---|
 | Slug, title, category, published, updated | Launch: `list_posts`. Other sites: the sitemap or the CMS export. |
 | Hub service page | The post's main service link (`content-blog-post`, step 4) |
-| Leads | Leads whose landing page or UTM points to the post (the `utm` data on each lead, from `launch-lead-capture`) |
+| Leads | Leads whose `utm` data points to the post (`utm_campaign` or `utm_content` equal to the slug; `launch-lead-capture`), plus `Lead Submitted` events on the post's path (`vercel-marketing-analytics`) |
 | Calls | `Call Clicked` events on the post (`launch-landing-page`, `vercel-marketing-analytics`) |
 | Clicks, impressions, average position | Search Console, Pages report, filtered to the post URL |
 | Top 3 queries | Search Console, Queries for that page |
@@ -58,7 +58,7 @@ This is a spot check, not a ranking report. Answers change by person, place and 
 | **Keep** | Brings leads or calls, facts are current | Nothing. Check again next quarter. |
 | **Refresh** | Brings visits or leads, but clicks fell, position slipped, facts are stale or the answer is weak | Update facts, answer block, proof, links; step 4 |
 | **Merge** | Two or more posts answer the same question and split the visits | Move the best parts into the stronger URL; 308 redirect the others to it |
-| **Remove** | No leads, no visits, no links for 12 months, and no future value; or wrong and not worth fixing | Redirect (308) to the closest post or the hub page; delete only when nothing relates (then 410) |
+| **Remove** | No leads, no visits, no links for 12 months, and no future value; or wrong and not worth fixing | Redirect (308) to the closest post or the hub page. A 410 only when nothing relates, and only with a middleware or host rule that serves it |
 
 - A post with leads or calls is never removed. It can be merged only when it is the
   surviving URL, or when the 308 redirect sends its traffic to a post that answers the same
@@ -142,7 +142,7 @@ weekly email of the month, or on its own.
 [the complete refreshed text for each, after content-publish-check]
 
 ## Redirects
-| From | To | Type (308 / 410) |
+| From | To | Type (308, or 410 with its middleware or host rule) |
 
 ## Owner report
 [the monthly report, ready to send]

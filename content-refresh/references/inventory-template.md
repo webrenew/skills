@@ -12,9 +12,10 @@
 
 ## Leads and calls by post
 
-- Leads: count leads whose stored landing page or UTM data points to the post. If leads do
-  not store the landing page yet, add it next to `utm` in the lead record
-  (`launch-lead-capture`, section 8) and start counting from that date.
+- Leads: count leads whose `utm` data points to the post, and `Lead Submitted` events on the
+  post's path (`vercel-marketing-analytics`). The shared lead record has no landing-page
+  field; if the owner wants one, add it next to `utm` (`launch-lead-capture`, section 8) and
+  count from that date.
 - Calls: count `Call Clicked` events with the post's path (`vercel-marketing-analytics`).
 - Channel posts: leads with `utm_campaign` equal to the post slug, or with `utm_campaign=gbp`
   and `utm_content` equal to the post slug (Google Business Profile posts), came from

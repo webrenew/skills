@@ -1,5 +1,7 @@
 # Channel Formats
 
+Facts checked: October 2026.
+
 Limits change; check each platform's current help page when a post is rejected. The examples
 repurpose one post: "Water heater leaking from the bottom? What it means" by Harbor Plumbing.
 

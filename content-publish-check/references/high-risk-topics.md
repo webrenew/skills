@@ -1,5 +1,7 @@
 # High-Risk Topics by Industry
 
+Facts checked: October 2026.
+
 A post on health, legal, money or safety can hurt a reader who follows it. These notes say
 where to look; they are not legal advice. When the business's own adviser, board or
 compliance contact gives a stricter rule, that rule wins. Record the reviewer in the approval
