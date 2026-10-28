@@ -147,7 +147,7 @@ minute. Set a retention period and delete logs after it.
 | Logs | Every decision can be explained |
 | Evals | A case set exists and runs before changes |
 
-## Related Launch skills
+## Related skills
 
 - `launch-lead-triage-agent`: an agent built on these rules.
 - `launch-speed-to-lead`: automatic messages that are safe without a model.

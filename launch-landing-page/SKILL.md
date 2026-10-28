@@ -100,7 +100,7 @@ rewrite:
 | Phone visible above the fold on mobile | missing | Add `tel:` link next to the main button |
 | Reviews near the top | ... | ... |
 
-## Related Launch skills
+## Related skills
 
 - `launch-lead-capture`: the form on the page.
 - `launch-booking-payments`: when the action is "book" or "pay".

@@ -74,10 +74,10 @@ Consent mode tells Google tags what the visitor agreed to. It has four signals:
 
 ## 4. Key events: one name for each business result
 
-GA4 calls a conversion a **key event**. The Launch skills use one event name for each result
+GA4 calls a conversion a **key event**. The `launch-*` skills use one event name for each result
 on the site. Map each to a GA4 name, and mark only the results as key events:
 
-| Site event (Launch skills) | GA4 event | Key event | Fire when |
+| Site event (`launch-*` skills) | GA4 event | Key event | Fire when |
 |---|---|---|---|
 | `Lead Submitted` | `generate_lead` | Yes | The server confirms that it stored the lead (`launch-lead-capture`, section 8) |
 | `Call Clicked` | `call_click` | Yes | A visitor taps a `tel:` link |

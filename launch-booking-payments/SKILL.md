@@ -210,7 +210,7 @@ Track `Booking Started`, `Booking Completed`, `Checkout Started` and `Purchase C
 data from the lead. A big drop between started and completed points at the step to fix:
 too many questions, no slots soon enough, or surprise costs at checkout.
 
-## Related Launch skills
+## Related skills
 
 - `launch-lead-capture`: when the business must quote before it books.
 - `launch-speed-to-lead`: stops follow-ups when a booking arrives.

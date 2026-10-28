@@ -344,7 +344,7 @@ Text gets the fastest replies, and it has the strictest rules:
 - Unsubscribe and spam-complaint rates. Google's sender rules ask senders to stay under 0.1%
   and never reach 0.3%. Above that, delivery suffers for every email the business sends.
 
-## Related Launch skills
+## Related skills
 
 - `launch-lead-capture`: the lead model, and the `lead-intake` task that starts this sequence.
 - `launch-lead-triage-agent`: drafts a personal first reply for the owner to approve.
