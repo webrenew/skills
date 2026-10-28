@@ -23,7 +23,7 @@ never. This job finds out first.
 | Check | How | Alert at once when |
 |---|---|---|
 | Site is up | `GET` the home page and main landing page | Status is not 200, or the response takes over 10 s |
-| Form delivers | Call the test entry point, then confirm the lead was stored and `ownerAlertedAt` is set | Not stored, or no alert after 5 minutes. A 503 from the test route (`LEAD_TEST_SECRET` or `LEAD_TEST_INBOX` unset), or a site that is not `business.url`, is a configuration error: alert the agency, and do not tell the owner the form is broken. |
+| Form delivers | Call the test entry point, then confirm the lead was stored and `ownerAlertedAt` is set | Not stored, or no alert after 5 minutes. A 503 from the test route (`LEAD_TEST_SECRET` or `LEAD_TEST_INBOX` unset), a 401 or 403 (the job's secret does not match the site's), or a site that is not `business.url`, is a configuration error: alert the agency, and do not tell the owner the form is broken. |
 | Certificate | Read the TLS certificate and its expiry | Not valid for the hostname, or under 14 days left |
 | Domain | Expiry date from RDAP (auto-renew status is only in the registrar's account) | Under 30 days left |
 | Broken links | Fetch every URL in `sitemap.xml` and internal links on key pages | A page in the sitemap returns 4xx or 5xx |
@@ -88,9 +88,11 @@ export function checkCertificate(host: string): Promise<CertificateCheck> {
       const validTo = socket.getPeerCertificate().valid_to as string | undefined   // {} when there is none
       const expiresAt = validTo ? new Date(validTo).getTime() : Number.NaN
       const daysLeft = Number.isNaN(expiresAt) ? null : Math.floor((expiresAt - Date.now()) / 86_400_000)
-      const problem = socket.authorized ? null : String(socket.authorizationError ?? "UNTRUSTED")
+      // Decide "no certificate" first: without one, `authorized` is false as well.
+      const problem =
+        daysLeft === null ? "NO_CERTIFICATE" : socket.authorized ? null : String(socket.authorizationError ?? "UNTRUSTED")
       socket.end()
-      resolve({ daysLeft, valid: socket.authorized && daysLeft !== null, problem: problem ?? (daysLeft === null ? "NO_CERTIFICATE" : null) })
+      resolve({ daysLeft, valid: problem === null, problem })
     })
     socket.setTimeout(10_000, () => socket.destroy(new Error("TLS timeout")))
     socket.on("error", reject)
@@ -101,6 +103,17 @@ export function checkCertificate(host: string): Promise<CertificateCheck> {
 **Field speed data (Chrome UX Report API)**
 
 ```ts
+interface CruxMetric {
+  percentiles: { p75: number | string }
+}
+
+/** CrUX sends p75 values as strings (CLS) or numbers, and leaves a metric out when data is thin. */
+function p75(metric: CruxMetric | undefined): number | undefined {
+  if (!metric) return undefined
+  const value = Number(metric.percentiles.p75)
+  return Number.isFinite(value) ? value : undefined
+}
+
 export async function fieldVitals(origin: string) {
   const response = await fetch(
     `https://chromeuxreport.googleapis.com/v1/records:queryRecord?key=${process.env.CRUX_API_KEY}`,
@@ -108,12 +121,11 @@ export async function fieldVitals(origin: string) {
   )
   if (response.status === 404) return null      // not enough traffic for field data
   if (!response.ok) throw new Error(`CrUX ${response.status}`)
-  const { record } = await response.json()
+  const { record } = (await response.json()) as { record: { metrics: Record<string, CruxMetric | undefined> } }
   return {
-    lcp: record.metrics.largest_contentful_paint?.percentiles.p75,
-    inp: record.metrics.interaction_to_next_paint?.percentiles.p75,
-    // CrUX returns CLS as a string, and leaves a metric out when it has too little data.
-    cls: record.metrics.cumulative_layout_shift ? Number(record.metrics.cumulative_layout_shift.percentiles.p75) : undefined,
+    lcp: p75(record.metrics.largest_contentful_paint),   // milliseconds
+    inp: p75(record.metrics.interaction_to_next_paint),  // milliseconds
+    cls: p75(record.metrics.cumulative_layout_shift),    // unitless
   }
 }
 ```
@@ -146,8 +158,9 @@ export async function formDelivers(site: string): Promise<FormTestResult> {
     method: "POST",
     headers: { "x-lead-test-secret": process.env.LEAD_TEST_SECRET ?? "" },
   })
-  // The test route itself is not set up. Report that to the agency, not as a broken form.
-  if (response.status === 503) return "not-configured"
+  // The test route is not set up (503), or this job's LEAD_TEST_SECRET does not match the
+  // site's (401/403, for example after a rotation). Report that to the agency, not as a broken form.
+  if ([401, 403, 503].includes(response.status)) return "not-configured"
   if (!response.ok) return "not-delivered"
   const { id } = (await response.json()) as { id: string }
   await wait.for({ minutes: 5 })                        // Trigger.dev: no compute while waiting

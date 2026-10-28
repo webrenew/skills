@@ -125,8 +125,16 @@ export const leadFollowUp = schemaTask({
       await recordStepSent(leadId, "confirmation")
     }
 
+    // Steps are planned from the lead's arrival. When the sequence starts late (the owner
+    // clears a possible-spam lead days later, or a run succeeds after an outage), past steps
+    // must not fire back to back: each waits for the next business morning after the one before.
+    let earliest = new Date()
     for (const step of FOLLOW_UPS) {
-      await wait.until({ date: nextBusinessMorning(first.createdAt, step.afterBusinessDays) })
+      if (first.sentSteps.includes(step.key)) continue   // sent before a retry
+      const planned = nextBusinessMorning(first.createdAt, step.afterBusinessDays)
+      const due = planned > earliest ? planned : nextBusinessMorning(earliest, 1)
+      earliest = due
+      await wait.until({ date: due })
       const lead = await getLead(leadId)               // re-read: they may have replied or booked
       if (!stillWaiting(lead)) break
       if (lead.sentSteps.includes(step.key)) continue
@@ -146,8 +154,9 @@ export const leadFollowUp = schemaTask({
 ```
 
 Waits in Trigger.dev do not use compute while they sleep, so a seven-day sequence costs the
-same as an instant one. `wait.until` with a past date returns at once, which is why every
-step checks `sentSteps` before it sends.
+same as an instant one. `wait.until` with a past date returns at once. That is why every step
+checks `sentSteps` before it sends, and why a late start moves each due step to the next
+business morning after the step before it instead of sending them all at once.
 
 ### The unsubscribe route
 
