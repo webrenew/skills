@@ -47,5 +47,6 @@ END:VEVENT
 END:VCALENDAR
 ```
 
-Escape commas, semicolons and backslashes in text fields with a backslash, and fold lines
-longer than 75 octets.
+Escape commas, semicolons and backslashes in text fields with a backslash, and write a line
+break inside a text value as `\n`. Fold lines longer than 75 octets: end the line with CRLF and
+start the next one with a single space.

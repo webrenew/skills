@@ -57,7 +57,7 @@ export const contentKit = {
     // Empty until the owner confirms: never a placeholder a post could quote.
     licences: [] as { name: string; number: string; lookupUrl: string }[],
     guarantee: null as string | null,   // the exact written wording
-    regulated: [],                // e.g. "gas lines: permit required, no DIY steps"
+    regulated: [] as string[],    // e.g. "gas lines: permit required, no DIY steps"
   },
   authors: [
     {

@@ -49,7 +49,7 @@ word. Do not add it to new posts for display.
 ## Launch: `write_post`
 
 Call `list_posts` first and confirm the slug is new. Call `write_post` only after the owner
-approves. A new post needs `title`, `publishedAt` and `updatedAt`.
+approves. A new post needs `slug`, `title`, `publishedAt` and `updatedAt`.
 
 ```json
 {
