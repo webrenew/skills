@@ -62,6 +62,11 @@ each channel.
   the website.
 - **Hashtags:** 0 to 5, specific ("#CharlestonPlumber"), never a block of 30.
 - **No engagement bait** ("Comment YES if...") and no fake urgency.
+- **Edit pass:** the source passed the plain-English check, but new channel copy did not.
+  Read each post as the owner would say it; remove the AI tells listed in `content-blog-post`,
+  `neverSay` phrases and the kit's `wordsWeAvoid`; run the `asd-ste100-writing` checker in
+  `marketing` mode; check the length against `references/channel-formats.md`. Customer
+  quotes stay word for word.
 
 ## 4. Tag every link
 
@@ -136,3 +141,4 @@ keep their dates. Never post on silence.
 - `launch-local-seo`: Google Business Profile rules and the `gbp` UTM campaign.
 - `launch-speed-to-lead`: the email consent and unsubscribe rules.
 - `vercel-marketing-analytics`: events that tie a UTM visit to a lead.
+- `asd-ste100-writing`: the plain-English checker for each channel post.

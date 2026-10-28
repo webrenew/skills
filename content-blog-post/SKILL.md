@@ -75,7 +75,11 @@ Use `references/post-template.md` for a full outline with an example.
 ## 3. Voice
 
 - Write in the owner's voice from the kit, on top of plain English (`asd-ste100-writing`).
-  Run its checker in `descriptive` mode on the draft.
+  Run its checker by section: `procedural` for numbered steps, `descriptive` for the
+  explanations, `marketing` for the close and call to action.
+- The checker never changes customer quotes, the kit's sample sentences or the byline. The
+  owner's "we" and "I" stay. Record each deliberate deviation in the Notes, as the
+  `asd-ste100-writing` skill asks.
 - Remove every AI tell in `references/ai-tells.md`, every word in the kit's `wordsWeAvoid`
   and every `neverSay` phrase.
 - Short paragraphs: 1 to 3 sentences. One idea per sentence.
@@ -133,8 +137,8 @@ it ends in an approval card.
 
 - **Launch sites:** after approval, save the post with `write_post`. Text blocks take HTML with
   `p`, `h2` to `h4`, `ul`, `ol`, `li`, `a`, `strong`, `em`, `br` and `blockquote`. There are
-  no tables: write a comparison as a list. Image blocks take 1 to 6 columns; video blocks take
-  YouTube or Vimeo ids. Call `list_posts` first so the slug is new. An overwrite is kept in
+  no tables: write a comparison as a list. Image blocks take `cols` 1 to 6 and `items`; video
+  blocks take a `provider` (YouTube or Vimeo) and an `id`. Call `list_posts` first so the slug is new. An overwrite is kept in
   `post_history`, and `restore_post` undoes it.
 - **Other sites:** a Markdown file with frontmatter, in the folder the site's blog reads.
 

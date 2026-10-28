@@ -56,13 +56,15 @@ it with real work, and brings leads. A person approves everything before it goes
 | [content-refresh](./content-refresh) | Know which posts bring leads and fix the ones that slip, with a one-minute monthly report for the owner |
 
 Start with `content-voice-and-proof`: the other six load its content kit. The skills reuse the
-business identity and profile from `launch-local-seo` and `launch-lead-triage-agent`, so the
-command below installs those two as well.
+business identity and profile from `launch-local-seo` and `launch-lead-triage-agent`, and
+check copy with `asd-ste100-writing`, so the command below installs those three as well. Other
+skills they mention (`launch-speed-to-lead`, `vercel-marketing-analytics`, `seo-technical`) are
+optional companions.
 
 Install the content skills:
 
 ```bash
-npx skills add https://github.com/webrenew/skills --skill content-voice-and-proof content-topic-plan content-blog-post content-publish-check content-repurpose content-case-study content-refresh launch-local-seo launch-lead-triage-agent
+npx skills add https://github.com/webrenew/skills --skill content-voice-and-proof content-topic-plan content-blog-post content-publish-check content-repurpose content-case-study content-refresh launch-local-seo launch-lead-triage-agent asd-ste100-writing
 ```
 
 ## Skill Structure
