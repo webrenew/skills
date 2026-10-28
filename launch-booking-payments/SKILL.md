@@ -5,7 +5,7 @@ description: >
   every booking and payment in sync with the lead. Use this skill for appointment booking,
   scheduling embeds, Cal.com, deposits, Stripe Checkout, Payment Links, no-show protection,
   booking and payment webhooks, and when the user mentions "let customers book online",
-  "take a deposit", "sell a package", or booking conversion. Part of the Webrenew Launch pack.
+  "take a deposit", "sell a package", or booking conversion.
 ---
 
 # Booking and Payments: Book and Pay Without a Phone Call
@@ -46,7 +46,7 @@ Cal.com signs the raw body with the webhook secret (HMAC SHA-256, hex) in the
 // app/api/webhooks/cal/route.ts
 import { createHmac, timingSafeEqual } from "node:crypto"
 
-import { markLeadBooked } from "@/lib/leads"
+import { markBookingCancelled, markBookingRescheduled, markLeadBooked } from "@/lib/leads"
 
 function verify(rawBody: string, signature: string | null, secret: string | undefined) {
   if (!secret || !signature) return false
@@ -61,22 +61,31 @@ export async function POST(request: Request) {
     return new Response("invalid signature", { status: 401 })
   }
 
-  const event = JSON.parse(rawBody)
-  if (event.triggerEvent === "BOOKING_CREATED") {
-    // `uid` is stable across Cal's retries: use it as the idempotency key.
-    await markLeadBooked({
-      bookingUid: event.payload.uid,
-      email: event.payload.attendees?.[0]?.email,
-      startTime: event.payload.startTime,
-      leadId: event.payload.metadata?.leadId,
-    })
+  const { triggerEvent, payload } = JSON.parse(rawBody)
+  const booking = {
+    bookingUid: payload.uid,                     // stable across Cal's retries: the idempotency key
+    email: payload.attendees?.[0]?.email,
+    startTime: payload.startTime,
+    leadId: payload.metadata?.leadId,
   }
+
+  if (triggerEvent === "BOOKING_CREATED") await markLeadBooked(booking)
+  if (triggerEvent === "BOOKING_RESCHEDULED") {
+    // Cal creates a new booking: `uid` is new, `rescheduleUid` is the one it replaces.
+    await markBookingRescheduled({ ...booking, previousBookingUid: payload.rescheduleUid })
+  }
+  if (triggerEvent === "BOOKING_CANCELLED") await markBookingCancelled(booking)
   return new Response("ok")
 }
 ```
 
-`markLeadBooked` sets the lead's status to `booked`, which stops the follow-up sequence in
-`launch-speed-to-lead`. Handle `BOOKING_CANCELLED` and `BOOKING_RESCHEDULED` the same way.
+What each helper does to the shared lead (see `launch-lead-capture`, section 5):
+
+| Helper | Lead change |
+|---|---|
+| `markLeadBooked` | Find the lead by `leadId`, else by email (most recent `new` lead). Set `bookingUid` and status `booked`. That stops the follow-ups in `launch-speed-to-lead`. Do nothing if this `bookingUid` is already stored. |
+| `markBookingRescheduled` | Find the lead by `previousBookingUid`. Store the new `bookingUid` and time. Status stays `booked`. |
+| `markBookingCancelled` | Set status back to `new` and alert the owner ("Dana cancelled Thursday's visit"). Do not restart the automatic sequence; the owner decides whether to call. |
 
 ## 3. Payments with Stripe
 
@@ -90,13 +99,23 @@ export async function POST(request: Request) {
 
 import { redirect } from "next/navigation"
 import Stripe from "stripe"
+import { z } from "zod"
+
+import { getLead } from "@/lib/leads"
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
 // The browser sends only a product key; the server owns the price.
-const PRICES = { deposit: "price_123", "deep-clean": "price_456" } as const
+const PRODUCTS = ["deposit", "deep-clean"] as const
+const PRICES: Record<(typeof PRODUCTS)[number], string> = { deposit: "price_123", "deep-clean": "price_456" }
+const checkoutInput = z.object({ product: z.enum(PRODUCTS), leadId: z.uuid() })
 
-export async function startCheckout(product: keyof typeof PRICES, leadId: string) {
+// Server Actions are public endpoints: check the input at runtime, not only in TypeScript.
+export async function startCheckout(input: unknown) {
+  const { product, leadId } = checkoutInput.parse(input)
+  const lead = await getLead(leadId)
+  if (!lead || lead.status === "spam") throw new Error("Unknown lead")
+
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
     line_items: [{ price: PRICES[product], quantity: 1 }],
@@ -152,7 +171,7 @@ export async function POST(request: Request) {
 
 ## 5. Measure each step
 
-Track `booking_started`, `booking_completed`, `checkout_started` and `purchase`, with the UTM
+Track `Booking Started`, `Booking Completed`, `Checkout Started` and `Purchase Completed`, with the UTM
 data from the lead. A big drop between started and completed points at the step to fix:
 too many questions, no slots soon enough, or surprise costs at checkout.
 

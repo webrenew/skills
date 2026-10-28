@@ -6,7 +6,7 @@ description: >
   text. Use this skill when building or reviewing an agent, chatbot, auto-reply, AI inbox,
   lead triage, or any automation where a model writes something a customer will read, and
   when the user mentions human approval, hallucinated prices, prompt injection, agent limits,
-  kill switch, feedback, or evals. Part of the Webrenew Launch pack.
+  kill switch, feedback, or evals.
 ---
 
 # Agent Guardrails: Automation the Owner Can Trust

@@ -6,7 +6,7 @@ description: >
   says launch, go live, ship the site, cut over DNS, replace the old site, pre-launch
   checklist, or "is the site ready". Covers domain and HTTPS, redirects from the old site,
   forms that deliver, analytics and consent, search basics, speed, accessibility, legal pages
-  and account ownership. Part of the Webrenew Launch pack.
+  and account ownership.
 ---
 
 # Launch Checklist: Go Live Without Losing Leads or Rankings
@@ -58,18 +58,20 @@ Old URLs carry the rankings and the links that other sites point at.
 
 ```bash
 while read -r path; do
-  printf '%s -> ' "$path"
-  curl -s -o /dev/null -w '%{http_code} %{redirect_url}\n' "https://$SITE$path"
+  first=$(curl -s -o /dev/null -w '%{http_code}' "https://$SITE$path")
+  final=$(curl -sL -o /dev/null -w '%{num_redirects} %{http_code} %{url_effective}' "https://$SITE$path")
+  echo "$path  first=$first  hops/final=$final"
 done < old-paths.txt
 ```
 
-Every line must show `301` or `308` to a page that returns `200`. No chains, no 404s.
+Every line must show `first=301` or `308`, exactly **1** hop, and a final `200`. More than
+one hop is a chain; fix it to point straight at the final URL.
 
 ## 3. Every contact path delivers
 
-- [ ] Submit each form on production with a real test entry. Confirm that the lead is stored,
-  that the owner gets the alert, and that the customer gets the confirmation. Then delete or
-  flag the test lead.
+- [ ] Submit each form on production with a real entry, using an inbox you control. Confirm
+  that the lead is stored, that the owner gets the alert, and that the confirmation arrives.
+  Then mark that lead `lost` (or delete it) so it does not count as a real lead.
 - [ ] Every phone number is a `tel:` link and dials the right number on a phone.
 - [ ] Booking and payment links open the live (not test) calendar or checkout.
 - [ ] The confirmation message says what happens next and when.
@@ -81,10 +83,12 @@ See `launch-lead-capture` for how forms should store and deliver leads.
 ```bash
 curl -s "https://$SITE/robots.txt"
 curl -s "https://$SITE/" | grep -ioE '<meta[^>]+name="robots"[^>]*>|<link[^>]+rel="canonical"[^>]*>|<title>[^<]*'
+curl -sI "https://$SITE/" | grep -i '^x-robots-tag'      # a header can say noindex too
 curl -s "https://$SITE/sitemap.xml" | head -20
 ```
 
-- [ ] **No `noindex`** on production pages, and `robots.txt` does not `Disallow: /`. This is
+- [ ] **No `noindex`** on production pages, in the robots meta tag **or** the `X-Robots-Tag`
+  header, and `robots.txt` does not `Disallow: /`. This is
   the most common launch bug: a staging setting that ships.
 - [ ] Each page has a unique title and meta description.
 - [ ] Canonical URLs point at the canonical origin from section 1.

@@ -3,9 +3,9 @@ name: launch-local-seo
 description: >
   Get a small business found in local search and the Google map pack. Use this skill when a
   site serves customers in a city or service area (trades, clinics, salons, restaurants, law,
-  real estate, home services) or when the user mentions local SEO, "near me" searches, Google
-  Business Profile, map pack, service-area pages, NAP consistency, citations, reviews, or
-  LocalBusiness schema. Part of the Webrenew Launch pack.
+  real estate, home services) or when the user mentions local SEO, "near me" searches, ranking
+  on Google Maps, Google Business Profile, map pack, more Google reviews, service-area pages, NAP consistency, citations, reviews, or
+  LocalBusiness schema.
 ---
 
 # Local SEO: Get Found by Customers Nearby
@@ -119,12 +119,14 @@ Reviews drive prominence and they also convert visitors.
 - Ask every customer after the job, by email or text, with the direct review link
   (`googleReviewUrl` above; find the Place ID with Google's Place ID Finder).
 - **Never gate reviews.** Do not send happy customers to Google and unhappy ones to a private
-  form. Google prohibits it, and so does the FTC.
+  form. Google prohibits selective review requests, and consumer-protection rules in several
+  countries treat suppressing negative reviews as deceptive.
 - **Never offer incentives** for reviews.
 - The owner replies to every review, the negative ones within 48 hours, calmly and with a fix.
 - Show recent reviews on the site with the reviewer's first name and the date.
 
-The `launch-speed-to-lead` skill can send the review request as the last step of a job.
+The `launch-speed-to-lead` skill sends the review request automatically one day after the
+owner marks a job `won`.
 
 ## 6. Citations: the same identity on the directories that matter
 

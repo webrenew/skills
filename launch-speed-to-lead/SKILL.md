@@ -5,7 +5,7 @@ description: >
   replies or opts out. Use this skill when the user mentions lead follow-up, speed to lead,
   auto-reply, instant response, missed leads, nurture sequence, drip emails after an enquiry,
   owner alerts for new leads, or review requests after a job. Built for Next.js with Resend
-  and Trigger.dev, and the ideas apply to any stack. Part of the Webrenew Launch pack.
+  and Trigger.dev, and the ideas apply to any stack.
 ---
 
 # Speed to Lead: Reply in Minutes, Follow Up Without Thinking About It
@@ -27,7 +27,7 @@ hour later. Most small businesses reply the next day, or never. Automation close
 | +1 business day, if no reply or booking | Lead | Short check-in that answers the most common question for their request | Restart the conversation |
 | +3 business days | Lead | Proof: a relevant project, review or before-and-after | Build trust |
 | +7 business days | Lead | "Close the loop": should we keep your request open? | A clear yes or no |
-| After a completed job | Customer | Thank-you and review request (`launch-local-seo` has the link) | Reviews |
+| 1 day after the owner marks the job `won` | Customer | Thank-you and review request (see "Review request after a won job") | Reviews |
 
 Keep each message short, plain and from a person ("Sam at Harbor Plumbing"), with a reply
 address that a person reads. Write in the business's voice. Never pretend a message is
@@ -37,81 +37,140 @@ hand-typed if it is not.
 
 Check all of these before **every** send, not only at the start:
 
-- The lead replied (by email, text, or a status the owner set).
-- The lead booked (see `launch-booking-payments`, which marks the lead `booked`).
-- The lead unsubscribed or asked to stop.
-- The owner marked the lead won, lost or spam.
+- The lead replied (`repliedAt` is set).
+- The status is no longer `new`: the owner contacted them, they booked (see
+  `launch-booking-payments`), or the owner marked the lead won, lost or spam.
+- The lead unsubscribed (`unsubscribedAt` is set).
 - The send would land outside business hours for a follow-up (instant replies are fine at
   any hour; follow-ups wait for the morning in the business's time zone).
 
 ## Implementation (Trigger.dev + Resend)
 
-One durable task per lead. It waits between steps and re-reads the lead before each send.
+This uses the shared lead model and the `lead-intake` orchestrator from
+`launch-lead-capture`. `lead-intake` starts this task once per lead with a global
+idempotency key. Do not start it from anywhere else.
+
+```ts
+// lib/send-email.ts
+import { Resend } from "resend"
+
+const resend = new Resend(process.env.RESEND_API_KEY)
+
+/** Resend returns `{ data, error }` and does not throw. Throw, so the task retries. */
+export async function sendEmail(payload: Parameters<typeof resend.emails.send>[0], idempotencyKey: string) {
+  const { data, error } = await resend.emails.send(payload, { idempotencyKey })
+  if (error) throw new Error(`Resend: ${error.name}: ${error.message}`)
+  return data
+}
+```
 
 ```ts
 // trigger/lead-follow-up.ts
 import { schemaTask, wait } from "@trigger.dev/sdk"
-import { Resend } from "resend"
 import { z } from "zod"
 
-import { getLead, nextBusinessMorning } from "@/lib/leads"
-import { confirmationEmail, checkInEmail, proofEmail, closeLoopEmail } from "@/emails/lead-sequence"
+import { getLead, nextBusinessMorning, recordStepSent, type Lead } from "@/lib/leads"
+import { sendEmail } from "@/lib/send-email"
+import { checkInEmail, closeLoopEmail, confirmationEmail, proofEmail } from "@/emails/lead-sequence"
 
-const resend = new Resend(process.env.RESEND_API_KEY)
 const FROM = "Sam at Harbor Plumbing <sam@harborplumbing.com>"
+const SITE = "https://harborplumbing.com"
 
-const STEPS = [
+const FOLLOW_UPS = [
   { key: "check-in", afterBusinessDays: 1, email: checkInEmail },
   { key: "proof", afterBusinessDays: 3, email: proofEmail },
   { key: "close-loop", afterBusinessDays: 7, email: closeLoopEmail },
 ] as const
 
-async function shouldStop(leadId: string) {
-  const lead = await getLead(leadId)
-  return !lead || lead.status !== "new" || lead.repliedAt !== null || lead.unsubscribedAt !== null
+function stillWaiting(lead: Lead | null): lead is Lead & { email: string } {
+  return !!lead && lead.status === "new" && !lead.repliedAt && !lead.unsubscribedAt && !!lead.email
 }
 
 export const leadFollowUp = schemaTask({
   id: "lead-follow-up",
   schema: z.object({ leadId: z.string() }),
+  retry: { maxAttempts: 5, minTimeoutInMs: 30_000, maxTimeoutInMs: 600_000, factor: 2 },
   run: async ({ leadId }) => {
-    const lead = await getLead(leadId)
-    if (!lead?.email) return { sent: 0 }
+    const first = await getLead(leadId)
+    if (!first?.email || first.isTest) return { sent: [] }
 
-    await resend.emails.send(
-      { from: FROM, to: lead.email, subject: "We got your request", react: confirmationEmail(lead) },
-      { idempotencyKey: `${leadId}:confirmation` },
-    )
-
-    let sent = 1
-    for (const step of STEPS) {
-      await wait.until({ date: nextBusinessMorning(lead.createdAt, step.afterBusinessDays) })
-      if (await shouldStop(leadId)) break
-      await resend.emails.send(
-        {
-          from: FROM, to: lead.email, subject: step.email.subject(lead), react: step.email.body(lead),
-          headers: { "List-Unsubscribe": `<https://harborplumbing.com/unsubscribe?lead=${lead.unsubscribeToken}>` },
-        },
-        { idempotencyKey: `${leadId}:${step.key}` },
-      )
-      sent++
+    // A retry starts run() again from the top. `sentSteps` makes every step run once.
+    if (!first.sentSteps.includes("confirmation")) {
+      await sendEmail({ from: FROM, to: first.email, subject: "We got your request", react: confirmationEmail(first) }, `${leadId}:confirmation`)
+      await recordStepSent(leadId, "confirmation")
     }
-    return { sent }
+
+    for (const step of FOLLOW_UPS) {
+      await wait.until({ date: nextBusinessMorning(first.createdAt, step.afterBusinessDays) })
+      const lead = await getLead(leadId)               // re-read: they may have replied or booked
+      if (!stillWaiting(lead)) break
+      if (lead.sentSteps.includes(step.key)) continue
+      await sendEmail({
+        from: FROM, to: lead.email, subject: step.email.subject(lead), react: step.email.body(lead),
+        headers: {
+          "List-Unsubscribe": `<${SITE}/unsubscribe?token=${lead.unsubscribeToken}>`,
+          "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+        },
+      }, `${leadId}:${step.key}`)
+      await recordStepSent(leadId, step.key)
+    }
+    const final = await getLead(leadId)
+    return { sent: final?.sentSteps ?? [] }
   },
 })
 ```
 
-Start it from the lead notification task (see `launch-lead-capture`) with
-`idempotencyKey: leadId`, so one lead never gets two sequences. Waits in Trigger.dev do not
-use compute while they sleep, so a seven-day sequence costs the same as an instant one.
+Waits in Trigger.dev do not use compute while they sleep, so a seven-day sequence costs the
+same as an instant one. `wait.until` with a past date returns at once, which is why every
+step checks `sentSteps` before it sends.
+
+### Review request after a won job
+
+When the owner marks a lead `won`, start one more task. It is separate from the follow-up
+sequence, which has stopped by then.
+
+```ts
+// trigger/review-request.ts
+import { schemaTask, wait } from "@trigger.dev/sdk"
+import { z } from "zod"
+
+import { business } from "@/lib/business"                 // launch-local-seo
+import { getLead, recordStepSent } from "@/lib/leads"
+import { sendEmail } from "@/lib/send-email"
+import { reviewRequestEmail } from "@/emails/lead-sequence"
+
+export const reviewRequest = schemaTask({
+  id: "review-request",
+  schema: z.object({ leadId: z.string() }),
+  run: async ({ leadId }) => {
+    await wait.for({ days: 1 })                       // after the job, not during it
+    const lead = await getLead(leadId)
+    if (!lead?.email || lead.status !== "won" || lead.unsubscribedAt || lead.sentSteps.includes("review-request")) return
+    await sendEmail({
+      from: "Sam at Harbor Plumbing <sam@harborplumbing.com>", to: lead.email,
+      subject: "How did we do?", react: reviewRequestEmail(lead, business.googleReviewUrl),
+    }, `${leadId}:review-request`)
+    await recordStepSent(leadId, "review-request")
+  },
+})
+```
+
+Ask every won customer the same way. Never filter by how happy they seem (see
+`launch-local-seo`, section 5).
+
+### Phone-only leads
+
+The form allows a phone number without an email. Those leads get no emails, so the owner
+alert must say **"Call: no email given"** at the top, and the 30-minute re-alert below matters
+most for them. Send texts only with explicit text consent (see "Text messages").
 
 ### Detect replies
 
 - Use a reply-to address on a domain with inbound email (Resend inbound, or the owner's
   mailbox with a forwarding rule to a webhook). On an inbound message from the lead's address,
-  set `repliedAt`.
-- Give the owner one button in the alert email or dashboard: "I talked to them". It sets the
-  lead status, which stops the sequence.
+  set `repliedAt` and status `contacted`.
+- Give the owner one button in the alert email or dashboard: "I talked to them". It sets
+  status `contacted`, which stops the sequence.
 
 ## Owner alert
 
@@ -121,7 +180,7 @@ The owner alert matters as much as the customer email. Make it actionable from a
 New lead: Dana Ruiz, water heater leaking (Mount Pleasant)
 Call: tel:+18435550199   Email: mailto:dana@example.com
 Came from: Google Business Profile, page /water-heater-repair
-Mark as handled: https://.../leads/123/handled
+I talked to them: https://.../leads/123/contacted
 ```
 
 Send it by the channel the owner reads fastest: SMS or Slack for most trades, email for
@@ -151,11 +210,11 @@ Text gets the fastest replies, and it has the strictest rules:
 - Median time to first reply (target: under 5 minutes for the automatic reply, under 1
   hour in business hours for a human call).
 - Share of leads that reply or book, by step. Remove steps that never get a response.
-- Unsubscribe and spam-complaint rates. A complaint rate above about 0.3% hurts delivery for
-  every email the business sends.
+- Unsubscribe and spam-complaint rates. Google's sender rules ask senders to stay under 0.1%
+  and never reach 0.3%. Above that, delivery suffers for every email the business sends.
 
 ## Related Launch skills
 
-- `launch-lead-capture`: stores the lead and starts this sequence.
+- `launch-lead-capture`: the lead model, and the `lead-intake` task that starts this sequence.
 - `launch-lead-triage-agent`: drafts a personal first reply for the owner to approve.
 - `launch-agent-guardrails`: rules for any message an agent writes.

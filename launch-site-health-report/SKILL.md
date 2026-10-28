@@ -1,18 +1,18 @@
 ---
 name: launch-site-health-report
 description: >
-  Build a scheduled job that checks a small business website every week and emails the owner
-  a short plain-English report: is the site up, does the form still deliver, how fast is it,
-  are links broken, when do the certificate and domain expire, and how many leads came in.
-  Alerts at once when something breaks. Use this skill for site monitoring, weekly reports,
+  Build scheduled jobs that check a small business website every morning and alert when
+  something breaks, plus a short plain-English weekly email for the owner: is the site up,
+  does the form still deliver, how fast is it, are links broken, when do the certificate and
+  domain expire, and how many leads came in. Use this skill for site monitoring, weekly reports,
   uptime checks, form tests, Core Web Vitals tracking, broken-link checks, or "tell me if my
-  site breaks". Built with Trigger.dev scheduled tasks. Part of the Webrenew Launch pack.
+  site breaks". Built with Trigger.dev scheduled tasks.
 ---
 
 # Site Health Report: Know the Site Works Without Checking It
 
-**RULE: Breakages alert at once. Everything else waits for one short weekly email that the
-owner can read in under a minute.**
+**RULE: A breakage alerts the same morning the daily check finds it. Everything else waits
+for one short weekly email that the owner can read in under a minute.**
 
 Most small business sites break quietly: a form stops delivering after a plugin or provider
 change, a certificate expires, a page starts to 404. The owner finds out from a customer, or
@@ -23,9 +23,9 @@ never. This job finds out first.
 | Check | How | Alert at once when |
 |---|---|---|
 | Site is up | `GET` the home page and main landing page | Status is not 200, or the response takes over 10 s |
-| Form delivers | Submit a test lead, then confirm it was stored and the alert was sent | The test lead is missing after 5 minutes |
+| Form delivers | Call the test entry point, then confirm the lead was stored and `ownerAlertedAt` is set | Not stored, or no alert after 5 minutes |
 | Certificate | Read the TLS certificate expiry | Under 14 days left |
-| Domain | Registrar or RDAP expiry date | Under 30 days left and auto-renew is off |
+| Domain | Expiry date from RDAP (auto-renew status is only in the registrar's account) | Under 30 days left |
 | Broken links | Fetch every URL in `sitemap.xml` and internal links on key pages | A page in the sitemap returns 4xx or 5xx |
 | `noindex` | Check robots meta and `robots.txt` on key pages | A production page says `noindex` |
 | Speed | Chrome UX Report (field data) or PageSpeed Insights | LCP, INP or CLS moves from "good" to "poor" |
@@ -76,7 +76,9 @@ import tls from "node:tls"
 
 export function certificateDaysLeft(host: string): Promise<number> {
   return new Promise((resolve, reject) => {
-    const socket = tls.connect({ host, port: 443, servername: host }, () => {
+    // rejectUnauthorized: false so an expired certificate reports negative days instead of
+    // throwing. We only read the certificate; no data is sent over this socket.
+    const socket = tls.connect({ host, port: 443, servername: host, rejectUnauthorized: false }, () => {
       const validTo = new Date(socket.getPeerCertificate().valid_to)
       socket.end()
       resolve(Math.floor((validTo.getTime() - Date.now()) / 86_400_000))
@@ -101,22 +103,42 @@ export async function fieldVitals(origin: string) {
   return {
     lcp: record.metrics.largest_contentful_paint?.percentiles.p75,
     inp: record.metrics.interaction_to_next_paint?.percentiles.p75,
-    cls: record.metrics.cumulative_layout_shift?.percentiles.p75,
+    cls: Number(record.metrics.cumulative_layout_shift?.percentiles.p75),   // CrUX returns CLS as a string
   }
 }
 ```
 
 Small sites often have too little traffic for field data. Fall back to a PageSpeed Insights
-lab run (`https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=...&strategy=mobile`)
-and say in the report that it is a lab estimate.
+lab run (`https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=...&strategy=mobile&key=...`;
+an API key avoids the shared quota) and say in the report that it is a lab estimate.
 
 **Form test**
 
-- Submit through the real form endpoint with a marker the system recognizes (for example a
-  dedicated test email address), so it skips the customer follow-up and owner alert, and
-  write the result to the lead store with `isTest: true`.
-- Confirm the row exists and the notification job ran. Then delete or hide the test lead.
-- Never let test leads reach the owner's CRM totals or the conversion events.
+The form is a Server Action with no stable URL, and a scripted submit would trip its bot
+traps. Use the test entry point from `launch-lead-capture` (`POST /api/leads/test` with the
+`x-lead-test-secret` header). It runs the real pipeline with `isTest: true`: the lead is
+stored, the alert goes to the test inbox, and no customer follow-up starts.
+
+```ts
+// lib/site-health/form-test.ts (runs inside the scheduled task)
+import { wait } from "@trigger.dev/sdk"
+
+import { getLead } from "@/lib/leads"
+
+export async function formDelivers(site: string): Promise<boolean> {
+  const response = await fetch(`${site}/api/leads/test`, {
+    method: "POST",
+    headers: { "x-lead-test-secret": process.env.LEAD_TEST_SECRET ?? "" },
+  })
+  if (!response.ok) return false
+  const { id } = await response.json()
+  await wait.for({ minutes: 5 })                        // Trigger.dev: no compute while waiting
+  const lead = await getLead(id)
+  return !!lead?.ownerAlertedAt
+}
+```
+
+Test leads stay out of every count, report and conversion event. Delete them after 30 days.
 
 **Broken links:** fetch the sitemap, request each URL with a concurrency limit of about 4
 and a timeout, and check only the site's own domain. Report each broken URL with the page

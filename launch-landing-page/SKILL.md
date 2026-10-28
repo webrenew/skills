@@ -5,7 +5,7 @@ description: >
   visitors into calls, bookings and leads. Use this skill for landing pages, home pages,
   service pages, ad landing pages and offer pages, and when the user mentions conversion rate,
   "the site gets traffic but no leads", hero section, call to action, social proof, message
-  match, or page structure. Part of the Webrenew Launch pack.
+  match, or page structure.
 ---
 
 # Landing Page: One Page, One Offer, One Action
@@ -73,13 +73,13 @@ Then, in this order, keeping only the sections the business can support with rea
 - No carousels or sliders above the fold. They hide the message and slow the page.
 - High contrast for the main button. One primary button style per page.
 - The hero image is compressed and sized for phones, and it loads first (see
-  `website-speed-optimization`). A page that takes 5 seconds to show its headline loses most
-  visitors before they read it.
+  `website-speed-optimization`). Every second before the headline shows costs visitors who
+  leave before they read it.
 
 ## 5. Measure, then change one thing
 
-- Define the conversion events: `lead_submitted`, `booking_completed`, `call_clicked`
-  (see `vercel-marketing-analytics`). Keep UTM parameters with each lead.
+- Define the conversion events: `Lead Submitted`, `Booking Completed`, `Call Clicked`
+  (Title Case, as in `vercel-marketing-analytics`). Keep UTM parameters with each lead.
 - Most small business pages do not get enough traffic for a valid A/B test. A rough guide is
   that each version needs at least a few hundred conversions. Below that, make one change at
   a time and compare 2 to 4 weeks before and after, against the same season if you can.
