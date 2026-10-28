@@ -59,8 +59,8 @@ From the samples, write down:
 - **Words we use:** the owner's own terms for the work ("service call", not "appointment";
   "crawl space", not "sub-floor area"). Keep the trade terms customers also use.
 - **Words we avoid in content:** words the owner dislikes in posts. Keep them in the kit's
-  `voice.wordsWeAvoid`. Posts also drop the AI tells in
-  `content-blog-post/references/ai-tells.md`; that list stays in the reference file.
+  `voice.wordsWeAvoid`. Posts also drop the AI tells listed in the `content-blog-post`
+  skill; that list stays there.
 - **Phrases never to say anywhere:** a claim or phrase that no lead reply and no post may use
   ("lifetime guarantee", "cheapest in town") goes in `neverSay` in `lib/business-profile.ts`.
   The triage agent matches `neverSay` as a substring of every reply draft, so add only

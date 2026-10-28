@@ -80,7 +80,8 @@ One pass per concern. A pass that tries to fix everything fixes nothing.
 3. **Proof:** at least one first-hand detail from the proof bank in the first 200 words. Each
    general claim has a real example nearby.
 4. **Plain English:** run the `asd-ste100-writing` checker in `descriptive` mode and fix what
-   it flags. Remove the AI tells in `content-blog-post/references/ai-tells.md`.
+   it flags. Remove the AI tells listed in the `content-blog-post` skill (its AI-tells
+   reference): stock phrases, the rule of three everywhere, empty openers, stacked hedges.
 5. **Voice:** read it as the owner. Replace any sentence the owner would not say to a customer.
    No `neverSay` phrases and no words from the kit's `wordsWeAvoid`.
 6. **Action:** one call to action, with copy above the button, that matches the post's intent.

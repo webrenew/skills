@@ -16,8 +16,9 @@
   not store the landing page yet, add it next to `utm` in the lead record
   (`launch-lead-capture`, section 8) and start counting from that date.
 - Calls: count `Call Clicked` events with the post's path (`vercel-marketing-analytics`).
-- Channel posts: leads with `utm_campaign` equal to the post slug came from repurposed posts
-  (`content-repurpose`).
+- Channel posts: leads with `utm_campaign` equal to the post slug, or with `utm_campaign=gbp`
+  and `utm_content` equal to the post slug (Google Business Profile posts), came from
+  repurposed posts (`content-repurpose`).
 
 ## Sheet
 

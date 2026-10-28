@@ -28,4 +28,4 @@ already answer.
 - Leave each unanswered field empty and add it to the owner to-do list. Never fill it with a
   guess, and never put placeholder text where a post could quote it.
 - Ask for consent in writing before any customer's name, face, home or words appear in a
-  post. `content-case-study/references/consent-template.md` has a short form.
+  post. The `content-case-study` skill has a short consent form.
