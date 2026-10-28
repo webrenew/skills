@@ -141,5 +141,5 @@ keep their dates. Never post on silence.
 - `content-refresh`: reads the UTM data back in the monthly report.
 - `launch-local-seo`: Google Business Profile rules and the `gbp` UTM campaign.
 - `launch-speed-to-lead`: the email consent and unsubscribe rules.
-- `vercel-marketing-analytics`: events that tie a UTM visit to a lead.
+- `google-analytics`: UTM rules and the key events that tie a channel visit to a lead.
 - `asd-ste100-writing`: the plain-English checker for each channel post.

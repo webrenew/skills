@@ -78,8 +78,8 @@ Then, in this order, keeping only the sections the business can support with rea
 
 ## 5. Measure, then change one thing
 
-- Define the conversion events: `Lead Submitted`, `Booking Completed`, `Call Clicked`
-  (Title Case, as in `vercel-marketing-analytics`). Keep UTM parameters with each lead.
+- Define the conversion events: `Lead Submitted`, `Booking Completed`, `Call Clicked`.
+  `google-analytics` maps them to GA4 key events. Keep UTM parameters with each lead.
 - Most small business pages do not get enough traffic for a valid A/B test. A rough guide is
   that each version needs at least a few hundred conversions. Below that, make one change at
   a time and compare 2 to 4 weeks before and after, against the same season if you can.

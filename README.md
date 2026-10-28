@@ -12,7 +12,6 @@ We partner with [Vercel](https://vercel.com), [Blackbox.ai](https://blackbox.ai)
 | [seo-technical](./seo-technical) | Technical SEO implementation and audit — Metadata API, JSON-LD structured data, Open Graph, sitemaps, Core Web Vitals |
 | [accessibility-audit](./accessibility-audit) | WCAG 2.2 AA compliance audit and implementation — ARIA patterns, keyboard navigation, screen readers, testing |
 | [security-hardening](./security-hardening) | Security hardening and OWASP compliance — CSP, Auth.js, Server Action security, input validation, production checklist |
-| [vercel-marketing-analytics](./vercel-marketing-analytics) | Vercel Analytics event strategy — user journeys, funnels, CTA tracking, lead generation, and conversion measurement |
 | [asd-ste100-writing](./asd-ste100-writing) | Clear product copy with ASD-STE100 Simplified Technical English and benefit-first framing |
 | [dependabot-batch](./dependabot-batch) | Collapse many open Dependabot PRs into one branch and one PR — manifest edits, single lockfile regeneration, gates, held-back bumps |
 | [overscroll-behavior](./overscroll-behavior) | Stop the desktop rubber-band bounce and keep mobile pull-to-refresh — `overscroll-behavior: none` gated behind `(pointer: fine)`, `contain` for nested scrollers |
@@ -65,6 +64,27 @@ Install the content skills:
 ```bash
 npx skills add https://github.com/webrenew/skills --skill content-voice-and-proof content-topic-plan content-blog-post content-publish-check content-repurpose content-case-study content-refresh launch-local-seo launch-lead-triage-agent asd-ste100-writing
 ```
+
+## PPC pack
+
+Three skills that show a small business which ads and visits bring customers, so the owner
+spends only on what works and approves every change.
+
+| Skill | What it gives the business |
+|-------|----------------------------|
+| [google-analytics](./google-analytics) | GA4 that counts leads, calls, bookings and sales once, with consent mode v2, clean UTMs and a one-minute weekly report |
+| [google-ads](./google-ads) | Search campaigns for local services that pay only for searches that can become customers: structure, keywords, negatives, assets, bidding, a weekly check |
+| [meta-ads](./meta-ads) | Facebook and Instagram ads from real jobs, with Pixel and Conversions API behind consent, honest creative and the right special ad category |
+
+Install the pack:
+
+```bash
+npx skills add https://github.com/webrenew/skills --skill google-analytics google-ads meta-ads
+```
+
+The three skills share one event map, so GA4, Google Ads and Meta count the same leads. Each
+names its Launch companions (landing page, lead capture, speed to lead, agent guardrails)
+under "Related skills"; they are optional and come with the Launch pack.
 
 ## Skill Structure
 
