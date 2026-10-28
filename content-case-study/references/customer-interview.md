@@ -9,7 +9,7 @@ word, or record the call with the customer's permission.
 | 2 | What worried you most about getting it fixed? | The worry other readers share |
 | 3 | What happened when we came out? Anything you did not expect? | What we found, what we did |
 | 4 | What is different now? | The result |
-| 5 | What would you tell a neighbour with the same problem? | The quote |
+| 5 | What would you tell a neighbor with the same problem? | The quote |
 
 ## How to ask
 

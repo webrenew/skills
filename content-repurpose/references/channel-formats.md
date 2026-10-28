@@ -52,8 +52,8 @@ you have. Full guide: link in bio.
 
 ## Nextdoor
 
-- Post from the business page. Neighbours respond to a helpful tip, not an ad.
-- Name the neighbourhood only when the job was there and consent covers it.
+- Post from the business page. Neighbors respond to a helpful tip, not an ad.
+- Name the neighborhood only when the job was there and consent covers it.
 
 ```
 Tip for older homes in Mount Pleasant: many 1990s water heaters are near the end of their

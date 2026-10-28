@@ -28,9 +28,9 @@ someone writes it down. This skill writes it down once, in one place, so every p
 | Services and prices | Each service, its price guide, phrases to never say | `lib/business-profile.ts` (`launch-lead-triage-agent`). Never copied into the kit. |
 | Voice | How the owner sounds: words to use, words to avoid, sentence habits | The owner's own emails and review replies |
 | Readers | Two or three kinds of customer, their situation, their worry, their words | Reviews, lead forms, calls |
-| Places | Towns and neighbourhoods served, with true local detail | The owner, the job history |
+| Places | Towns and neighborhoods served, with true local detail | The owner, the job history |
 | Proof bank | Real jobs, numbers, photos and approved quotes, each with source, date and consent | Job records, photos, reviews |
-| Claim limits | What the business may say about prices, licences, guarantees, timing | The owner, licence records, the written guarantee |
+| Claim limits | What the business may say about prices, licenses, guarantees, timing | The owner, license records, the written guarantee |
 | Authors | Real names, roles, credentials, a short bio and a photo | The owner and staff |
 
 **One store, not two.** The site, the schema, the lead triage agent and every post read the
@@ -46,7 +46,7 @@ business profile or the reviews already answer.
 
 If the owner has no time, ask the five questions marked **core** and fill the rest later.
 Never fill a gap with a guess. Leave the field empty and put the question on the owner
-to-do list. A post that needs an empty field (a licence number, the guarantee, a bio) cannot
+to-do list. A post that needs an empty field (a license number, the guarantee, a bio) cannot
 pass `content-publish-check` until the owner fills it.
 
 ## 2. Take the voice from the owner's own writing
@@ -65,7 +65,7 @@ From the samples, write down:
   ("lifetime guarantee", "cheapest in town") goes in `neverSay` in `lib/business-profile.ts`.
   The triage agent matches `neverSay` as a substring of every reply draft, so add only
   multi-word phrases there, never single common words.
-- **Sentence habits:** short or long, "we" or "I", how they greet and sign off, how much humour.
+- **Sentence habits:** short or long, "we" or "I", how they greet and sign off, how much humor.
 - **Three sample sentences** in the voice, taken word for word from the samples.
 
 Write the voice in plain terms. "Friendly, direct, explains the why, never talks down, signs as
@@ -91,13 +91,13 @@ Each entry is one fact a post can show. Use the format in `references/content-ki
 |---|---|
 | `type` | `job`, `number`, `photo`, `quote`, `credential` or `award` |
 | `summary` | One sentence, what happened or what is true |
-| `place` | Town or neighbourhood only. Never a street address. |
+| `place` | Town or neighborhood only. Never a street address. |
 | `date` | When the job was done or the fact was true |
-| `source` | Where it can be checked: job record, invoice, review link, licence lookup, photo file |
+| `source` | Where it can be checked: job record, invoice, review link, license lookup, photo file |
 | `consent` | `not-needed` (the business's own fact), `written YYYY-MM-DD`, or `pending`. Customer quotes, names, faces and homes need written consent. |
 | `useUntil` | When to check it again: prices and counts go stale |
 
-Start with 10 entries. Good first entries: three recent jobs with photos, the licence and
+Start with 10 entries. Good first entries: three recent jobs with photos, the license and
 insurance numbers, years in business, jobs done last year (from the records, not memory),
 two or three approved review quotes, the written guarantee. `content-case-study` adds more
 entries each time a job is finished.
@@ -119,7 +119,7 @@ mark it "do not mention".
   or "do not publish prices".
 - **Timing:** what the business can promise ("most repairs in one visit") and what it cannot
   ("same-day").
-- **Licences and insurance:** name, number, issuer, and the public lookup link.
+- **Licenses and insurance:** name, number, issuer, and the public lookup link.
 - **Guarantee:** the exact written wording. Posts quote it word for word or link to it.
 - **Comparisons:** never name or run down a competitor.
 - **Regulated topics:** health, legal, money and safety claims follow `content-publish-check`.

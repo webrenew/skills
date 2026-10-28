@@ -59,7 +59,7 @@ log.
   for electrical work) and link to the local office.
 - Pest control: "The label is the law" (EPA). Never advise a use the product label does not
   allow.
-- Some states require the contractor licence number in every advertisement (California is one
+- Some states require the contractor license number in every advertisement (California is one
   example). Check whether a post counts as an ad in the business's state, and add the number
   if in doubt.
 

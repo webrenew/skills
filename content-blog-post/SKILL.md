@@ -102,11 +102,11 @@ Use `references/post-template.md` for a full outline with an example.
 - Real job photos first, from the proof bank, with consent where a customer's home or face
   shows.
 - Never stock photos or AI images shown as the business's work. A diagram is fine when it is
-  labelled as a diagram.
+  labeled as a diagram.
 - Alt text says what the photo shows and why it matters: "Rusted base of a 1998 water
   heater tank, the cause of the leak". No "image of", no keyword lists, under 125 characters.
 - Cover image 1200 x 630 pixels for link previews, under 300 KB, WebP or JPEG.
-- Strip GPS location from photo files before upload. No house numbers, licence plates or
+- Strip GPS location from photo files before upload. No house numbers, license plates or
   faces without consent.
 
 ## 6. Package

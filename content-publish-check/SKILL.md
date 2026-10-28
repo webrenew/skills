@@ -118,7 +118,7 @@ Mark each `pass` or `fix`, with the fix.
 - Every link returns 200 (no redirects to a home page, no 404s).
 - Every image is the business's own, or licensed for this use. Record the source.
 - A photo that shows a customer, their home, their car or their child needs written consent
-  in the proof bank. No house numbers, street signs, licence plates or faces without it.
+  in the proof bank. No house numbers, street signs, license plates or faces without it.
   Strip GPS location data from photo files.
 - Paid links, affiliate links and partner links use `rel="sponsored"`. A post about a
   supplier who gave a discount says so.

@@ -10,9 +10,9 @@ Permission to share your project
 Harbor Plumbing would like to share the story of the work we did for you, so other people
 with the same problem know what to expect.
 
-Please tick what we may use:
+Please check what we may use:
 [ ] Your first name     [ ] Your initials only     [ ] No name
-[ ] Your neighbourhood or town (never your street address)
+[ ] Your neighborhood or town (never your street address)
 [ ] Photos of the work at your property (no house numbers, plates or faces)
 [ ] Photos that show you
 [ ] Your words from our interview, as you said them
@@ -35,7 +35,7 @@ Name: ______________________   Signature: ______________________   Date: _______
 ## Rules
 
 - Keep the signed copy for as long as the content is live, plus one year.
-- Record the date and the ticked items in the proof bank entry (`consent: written YYYY-MM-DD`).
-- Use only what is ticked, in the places that are ticked.
+- Record the date and the checked items in the proof bank entry (`consent: written YYYY-MM-DD`).
+- Use only what is checked, in the places that are checked.
 - On a request to remove: take it off the website within the promised time, remove it from
   scheduled social posts, and update the proof bank.

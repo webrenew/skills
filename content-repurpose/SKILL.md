@@ -35,7 +35,7 @@ with no replies for a week does more harm than no channel.
 | Channel | Best for | Format notes |
 |---|---|---|
 | Google Business Profile | Local searchers about to call | An update or an offer with a photo and a button; no phone number in the text |
-| Facebook | Past customers, neighbours | 2 to 4 short lines, a real photo, the link |
+| Facebook | Past customers, neighbors | 2 to 4 short lines, a real photo, the link |
 | Instagram | Before-and-after, visual work | A photo carousel; the caption carries the answer; links do not click in captions |
 | Nextdoor | Homeowners nearby | Post from the business page; helpful first, no hard sell |
 | LinkedIn | B2B services, the owner's network | From the owner's profile, a short story with a lesson |

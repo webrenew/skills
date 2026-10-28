@@ -15,7 +15,7 @@ description: >
 a made-up, merged or AI-written testimonial, and never an edit that changes what the customer
 meant.**
 
-A case study is the strongest proof a small business can publish: a neighbour with the same
+A case study is the strongest proof a small business can publish: a neighbor with the same
 problem, what the business did, and what changed. It also feeds the proof bank, so every later
 post can point to it.
 
@@ -37,7 +37,7 @@ is a good moment to ask for the case study too.
 No draft goes to anyone before consent is in writing. Use
 `references/consent-template.md`.
 
-- Consent says exactly what the business will use: name or initials, neighbourhood, photos
+- Consent says exactly what the business will use: name or initials, neighborhood, photos
   of the home, quotes, and where (website, social media, email, print).
 - The customer can review the final text before it goes live, and can withdraw consent later.
   Withdrawal means the business removes it from the site and stops new use.
@@ -68,7 +68,7 @@ and never change the meaning or make it stronger.
 | What we found | The cause, with a "before" photo; what a reader in the same spot needs to know |
 | What we did | The work, in steps; choices made and why; time on site |
 | The result | Numbers: time, cost range if the owner allows, what stopped or changed; an "after" photo |
-| In their words | The customer's quote, word for word, with first name or initials and neighbourhood, as consent allows |
+| In their words | The customer's quote, word for word, with first name or initials and neighborhood, as consent allows |
 | What this means for you | When the reader's problem is the same, and when it is not |
 | Action | One call to action, copy above the button, linked to the service page |
 
@@ -76,8 +76,8 @@ Length: 400 to 900 words. Photos carry much of it.
 
 ## 5. Privacy
 
-- **Neighbourhood or town only.** Never a street address, house number, or a photo that shows
-  one (street signs, house numbers, mailboxes, licence plates).
+- **Neighborhood or town only.** Never a street address, house number, or a photo that shows
+  one (street signs, house numbers, mailboxes, license plates).
 - Strip GPS location data from every photo file.
 - No faces, family photos, documents or screens in the background without consent.
 - Business customers: the company name only with their approval, and nothing under an NDA.
@@ -113,7 +113,7 @@ no written consent is NOT READY.
 
 ```
 ## Job and consent
-[job id, service, neighbourhood, date, consent date and scope, what still needs consent]
+[job id, service, neighborhood, date, consent date and scope, what still needs consent]
 
 ## Case study
 [the complete text, top to bottom, ready to publish]

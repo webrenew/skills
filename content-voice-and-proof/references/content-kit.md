@@ -17,9 +17,9 @@ export interface ProofEntry {
   id: string                      // "job-2026-09-mtp-water-heater"; also in photo file names
   type: ProofType
   summary: string                 // one sentence, true and checkable
-  place?: string                  // town or neighbourhood, never a street address
+  place?: string                  // town or neighborhood, never a street address
   date: string                    // YYYY-MM-DD
-  source: string                  // job record, invoice, review URL, licence lookup, photo file
+  source: string                  // job record, invoice, review URL, license lookup, photo file
   consent: "not-needed" | `written ${string}` | "pending"
   useUntil?: string               // YYYY-MM-DD: check again after this date
   photos?: { file: string; alt: string }[]
@@ -55,7 +55,7 @@ export const contentKit = {
     prices: "Use only businessProfile.services[].priceGuide, as written.",
     timing: { may: ["Most repairs are done in one visit"], mayNot: ["same-day", "within the hour"] },
     // Empty until the owner confirms: never a placeholder a post could quote.
-    licences: [] as { name: string; number: string; lookupUrl: string }[],
+    licenses: [] as { name: string; number: string; lookupUrl: string }[],
     guarantee: null as string | null,   // the exact written wording
     regulated: [] as string[],    // e.g. "gas lines: permit required, no DIY steps"
   },
@@ -71,7 +71,7 @@ export const contentKit = {
     },
   ],
   proof: [] as ProofEntry[],
-} as const
+}
 ```
 
 When the proof bank passes about 50 entries, or the owner wants to add entries from a phone,
@@ -103,9 +103,9 @@ same file.
 | job-2026-09-mtp-water-heater | job | Replaced a leaking 1998 40-gallon tank with a 50-gallon unit in one visit | Mount Pleasant | 2026-09-14 | Job #4471, 6 photos | written 2026-09-15 | |
 | num-2025-jobs | number | 1,212 service calls in 2025 | | 2025-12-31 | Job system export, Jan 2026 | not-needed | 2026-12-31 |
 | quote-dana-r | quote | "They showed me the old part and explained why it failed." | Summerville | 2026-08-02 | Google review link | written 2026-08-05 | |
-| cred-master-plumber | credential | SC Master Plumber licence | | 2026-01-01 | State licence lookup link | not-needed | 2026-12-31 |
+| cred-master-plumber | credential | SC Master Plumber license | | 2026-01-01 | State license lookup link | not-needed | 2026-12-31 |
 
 Photos live in the site's media storage, named with the entry `id`
 (`job-2026-09-mtp-water-heater-1.jpg`). In the Markdown table, add a `photos` column with each
 file name and its alt text, or leave it empty when the entry has none. `useUntil` is optional. Leave it empty for facts that do not go stale (a finished job, a
-quote); set it for prices, counts and licences, which need a check on that date.
+quote); set it for prices, counts and licenses, which need a check on that date.
