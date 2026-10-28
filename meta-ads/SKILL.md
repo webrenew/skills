@@ -197,3 +197,5 @@ source of each photo or video); and the instant form or landing page checklist.
 - `launch-speed-to-lead`: answers each lead within minutes.
 - `launch-agent-guardrails`: approval rules for anything that spends or posts.
 - `launch-lead-triage-agent`: drafts replies to leads and comments for approval.
+- `content-voice-and-proof`: the proof bank of real jobs, photos and approved quotes for ads.
+- `content-case-study`: customer consent and the FTC testimonial rules for job stories.

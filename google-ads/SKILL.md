@@ -224,3 +224,4 @@ screenshot or the report numbers), and the fix as a change request:
 - `launch-local-seo`: the Business Profile behind the location asset and LSA.
 - `launch-agent-guardrails`: the approval rules this skill follows.
 - `seo-technical`: crawl and page health for the landing pages.
+- `content-topic-plan`: the real customer questions that keyword themes start from.

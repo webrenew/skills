@@ -202,3 +202,4 @@ with screenshots or DebugView notes.
 - `launch-site-checklist`: the go-live check for analytics and consent.
 - `launch-site-health-report`: sends the weekly report.
 - `seo-technical`: Search Console and crawl health.
+- `content-refresh`: reads leads and calls by blog post from these events.
