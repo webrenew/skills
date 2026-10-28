@@ -95,9 +95,9 @@ This is a spot check, not a ranking report. Answers change by person, place and 
 5. Remove the old URLs from the sitemap.
 
 On Launch sites, save the merged post with `write_post`, add the 308 redirect, and only then
-`delete_post` the old one, so the old URL never returns a 404. `write_post` and `delete_post`
-both keep earlier versions: `post_history` lists the last 10, and `restore_post` undoes an
-overwrite or a delete.
+`delete_post` the old one, so the old URL never returns a 404. Both keep the old version, so
+`restore_post` can undo the overwrite or the delete (the tool contract is in the
+`content-blog-post` skill's `references/post-package.md`).
 
 ## 6. The monthly owner report
 

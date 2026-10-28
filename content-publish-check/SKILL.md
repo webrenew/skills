@@ -84,8 +84,9 @@ One pass per concern. A pass that tries to fix everything fixes nothing.
 4. **Plain English:** run the `asd-ste100-writing` checker by section (`procedural` for
    steps, `descriptive` for explanations, `marketing` for the call to action) and fix what it
    flags. Never change customer quotes, the kit's sample sentences or the byline, and keep the
-   owner's "we" and "I"; list these as accepted deviations in the output. Remove the AI tells listed in the `content-blog-post` skill (its AI-tells
-   reference): stock phrases, the rule of three everywhere, empty openers, stacked hedges.
+   owner's "we" and "I"; list these as accepted deviations in the output. Remove the AI
+   tells in the `content-blog-post` skill's `references/ai-tells.md`: stock phrases, the
+   rule of three everywhere, empty openers, stacked hedges.
 5. **Voice:** read it as the owner. Replace any sentence the owner would not say to a customer.
    No `neverSay` phrases and no words from the kit's `wordsWeAvoid`.
 6. **Action:** one call to action, with copy above the button, that matches the post's intent.
@@ -93,9 +94,10 @@ One pass per concern. A pass that tries to fix everything fixes nothing.
 ## 4. Search and AI-answer checks
 
 These checks apply to posts, case studies and pages. A channel post (social, Google Business
-Profile, email) skips them: check it against its channel's limits in the
-`content-repurpose` skill (its `references/channel-formats.md`), its link and UTM tags, and steps 1, 3, 5
-and 6.
+Profile, email) skips this table. Check it instead against its channel's limits (the
+`content-repurpose` skill's `references/channel-formats.md`) and its link and UTM tags. All
+other sections still apply to it: 1 (claim ledger), 2 (high-risk topics), 3 (every edit pass,
+including plain English and AI tells), 5 (links and media rights) and 6 (approval).
 
 | Check | Pass when |
 |---|---|

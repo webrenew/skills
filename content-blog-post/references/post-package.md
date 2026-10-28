@@ -99,7 +99,8 @@ Blocks (the one place this skill defines them):
 
 - To update a post, send the slug and only the fields that change. Send `blocks` only to
   replace the whole body.
-- `post_history` lists the last 10 versions; `restore_post` puts one back.
+- `write_post` overwrites and `delete_post` deletes both keep the old version. `post_history`
+  lists the last 10 versions; `restore_post` puts one back, including a deleted post.
 
 ## Other sites: Markdown
 
