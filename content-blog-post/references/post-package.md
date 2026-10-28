@@ -87,8 +87,14 @@ approves. A new post needs `title`, `publishedAt` and `updatedAt`.
 }
 ```
 
-- Text block HTML: only `p`, `h2`, `h3`, `h4`, `ul`, `ol`, `li`, `a`, `strong`, `em`, `br`,
-  `blockquote`. No `h1` (the template renders the title), no tables, no inline styles.
+Blocks (the one place this skill defines them):
+
+| Block | Fields |
+|---|---|
+| `text` | `html` with only `p`, `h2`, `h3`, `h4`, `ul`, `ol`, `li`, `a`, `strong`, `em`, `br`, `blockquote`. No `h1` (the template renders the title), no tables, no inline styles. |
+| `images` | `cols` 1 to 6, and `items`: `{ src, alt?, caption?, ratio? }`. Always give `alt`. |
+| `video` | `provider` (`youtube` or `vimeo`) and `id` |
+
 - To update a post, send the slug and only the fields that change. Send `blocks` only to
   replace the whole body.
 - `post_history` lists the last 10 versions; `restore_post` puts one back.

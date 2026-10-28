@@ -135,11 +135,10 @@ frontmatter.
 Never publish without the owner's approval. Run `content-publish-check` on the final draft;
 it ends in an approval card.
 
-- **Launch sites:** after approval, save the post with `write_post`. Text blocks take HTML with
-  `p`, `h2` to `h4`, `ul`, `ol`, `li`, `a`, `strong`, `em`, `br` and `blockquote`. There are
-  no tables: write a comparison as a list. Image blocks take `cols` 1 to 6 and `items`; video
-  blocks take a `provider` (YouTube or Vimeo) and an `id`. Call `list_posts` first so the slug is new. An overwrite is kept in
-  `post_history`, and `restore_post` undoes it.
+- **Launch sites:** after approval, save the post with `write_post`, in the block format in
+  `references/post-package.md` (text, images, video; no tables, so write a comparison as a
+  list). Call `list_posts` first so the slug is new. An overwrite is kept in `post_history`,
+  and `restore_post` undoes it.
 - **Other sites:** a Markdown file with frontmatter, in the folder the site's blog reads.
 
 ## Output

@@ -14,18 +14,21 @@ asks; a field with a line break needs the same quotes. Dates are `YYYY-MM-DD`.
 "content-case-study-mount-pleasant-tank","0","2026-11-18","case-study","A 1998 tank replaced in one visit in Mount Pleasant","learn","/services/water-heaters","Job #4471 with written consent","Ask the customer the 5 questions","2026-11-11","planned","15"
 ```
 
-`status` is one of `planned`, `brief`, `draft`, `waiting-for-owner`, `approved`, `published`,
-`skipped`.
+`type` is one of `post`, `case-study` and `refresh`. A question that an existing post already
+answers becomes a `refresh` row with that post's slug, handed to `content-refresh`. `status`
+is one of `planned`, `brief`, `draft`, `waiting-for-owner`, `approved`, `published`,
+`skipped`. The `uid` is `content-<type>-<slug>`.
 
 ## ICS: `content-plan.ics`
 
 One all-day event per owner task, on the owner's due date, so the calendar shows what the
 owner must do, not only what goes live. Use CRLF line endings (RFC 5545). `DTEND` is the day
-after `DTSTART` for an all-day event. Build each `UID` from the item type and slug only,
-never a date, so it stays the same when the plan moves and a re-import updates the event
-instead of adding a copy. The CSV's `uid` and `sequence` columns store both values: add 1 to
-`sequence` when a row's date or task changes, and write it as `SEQUENCE`. Set `DTSTAMP` to
-the time of each export, in UTC. Calendar apps then accept the update.
+after `DTSTART` for an all-day event. Build each `UID` from the item type and slug only, never
+a date, plus `@` and the site's domain (the CSV `uid` + `@harborplumbing.com`), so it stays
+the same when the plan moves and a re-import updates the event instead of adding a copy. The
+CSV's `uid` and `sequence` columns store both values: add 1 to `sequence` when a row's date or
+task changes, and write it as `SEQUENCE`. Set `DTSTAMP` to the time of each export, in UTC.
+Calendar apps then accept the update.
 
 ```ics
 BEGIN:VCALENDAR

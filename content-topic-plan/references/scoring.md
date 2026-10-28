@@ -2,7 +2,8 @@
 
 `score = lead value x 3 + proof x 2 + demand x 1 - effort x 1`
 
-Range: -3 to 18. Sort by score. Any topic with proof 0 is not scheduled, whatever its score.
+Range: -3 to 18 by the formula, -1 to 18 after the proof-0 gate. Sort by score. Any topic
+with proof 0 is not scheduled, whatever its score.
 
 ## Lead value (x3)
 
