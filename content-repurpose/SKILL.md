@@ -79,7 +79,9 @@ show which channel brings leads. Build them with the Webrenew UTM link builder
 | Email | `newsletter` | `email` | post slug | `issue-YYYY-MM` |
 
 GBP links follow `launch-local-seo` (`utm_campaign=gbp`), so profile traffic stays in one
-campaign; the post slug goes in `utm_content`. Use lowercase and hyphens everywhere.
+campaign; the post slug goes in `utm_content`. Use lowercase and hyphens everywhere, so
+`utm_campaign` matches the post slug. Some tools suggest underscores; analytics counts
+`water-heater` and `water_heater` as two campaigns, so pick one style and keep it.
 
 ## 5. Spread it over two to three weeks
 

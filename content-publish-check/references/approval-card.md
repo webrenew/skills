@@ -19,6 +19,11 @@ Verdict: READY AFTER OWNER CONFIRMS
 
 ## Rules
 
+- **The "Read it" link** shows the exact draft: the blog's own preview URL if it has one, a
+  shared document, or the full text on the card. On a Launch site the post is saved with
+  `write_post` only after approval, so link a shared document or put the text on the card.
+  Never link a URL that nothing creates.
+
 - One card per item. Never ask the owner to approve a batch with one tap.
 - List at most five confirmations. More than five means the draft is not ready: fix it first.
 - Each confirmation is a yes-or-no question about one claim, in plain words.

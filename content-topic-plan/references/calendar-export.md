@@ -20,8 +20,9 @@ One row per item. Quote every field. Dates are `YYYY-MM-DD`.
 
 One all-day event per owner task, on the owner's due date, so the calendar shows what the
 owner must do, not only what goes live. Use CRLF line endings (RFC 5545). `DTEND` is the day
-after `DTSTART` for an all-day event. Each `UID` stays the same when the plan changes, so a
-re-import updates events instead of adding copies. Add 1 to `SEQUENCE` each time an event
+after `DTSTART` for an all-day event. Build each `UID` from the item type and slug only,
+never a date, so it stays the same when the plan moves and a re-import updates the event
+instead of adding a copy. Add 1 to `SEQUENCE` each time an event
 changes, so calendar apps accept the update.
 
 ```ics
@@ -30,7 +31,7 @@ VERSION:2.0
 PRODID:-//Webrenew//content-topic-plan//EN
 CALSCALE:GREGORIAN
 BEGIN:VEVENT
-UID:content-2026-11-04-water-heater-leaking@harborplumbing.com
+UID:content-post-water-heater-leaking-from-bottom@harborplumbing.com
 DTSTAMP:20261028T120000Z
 SEQUENCE:0
 DTSTART;VALUE=DATE:20261102
