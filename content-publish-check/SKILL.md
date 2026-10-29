@@ -35,11 +35,12 @@ Read the draft line by line. Put every checkable claim in the ledger.
 | 4 | "Done in one visit" | timing | Claim limits: "most repairs in one visit" | soften to "most repairs" |
 | 5 | "Licensed and insured" | credential | Proof bank `cred-master-plumber` | verified |
 
-**Types:** price, timing, guarantee, policy, credential, number (about the business), outside
-fact, quote, comparison, superlative, health, legal, money, safety.
+**Types:** price, timing, policy (including the guarantee), credential, number (about the
+business), outside fact, quote, comparison, superlative, health, legal, money, safety.
 
-**Status:** `verified` (a source in the kit or a primary source), `owner` (only the owner can
-confirm; goes on the approval card), `soften` (rewrite to what the source supports), `cut`.
+**Status:** `verified` (a source in the kit, the profile or a primary source), `owner` (only
+the owner can confirm; goes on the approval card), `soften` (rewrite to what the source
+supports), `cut`.
 
 Rules:
 - **No "studies show", "experts say", "research proves".** Name the source or cut it.
@@ -166,7 +167,7 @@ confirm, and one-tap Approve, Edit and Reject.
 
 ## Related skills
 
-- `content-voice-and-proof`: the proof bank and claim limits this check trusts.
+- `content-voice-and-proof`: the proof bank, claim limits and business profile this check trusts.
 - `content-blog-post`: the draft this check reviews, and the AI-tells list.
 - `content-case-study`: consent and testimonial rules for customer stories.
 - `content-refresh`: runs this check again on every refreshed post.

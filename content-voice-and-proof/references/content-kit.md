@@ -83,19 +83,20 @@ move `proof` to a database table with the same fields. Keep the rest of the kit 
 Same sections, as headings: `Voice`, `Readers`, `Places`, `Claim limits`, `Authors`,
 `Proof bank`. Write one line at the top:
 
-> Identity, services and prices: see the business profile. Do not copy them here.
+> Identity: see the business identity. Services, prices, policies, tone and the booking link:
+> see the business profile. Do not copy them here.
 
 Write the proof bank as a table with the same columns as `ProofEntry`.
 
 ## The business profile
 
-The business profile is the one store for services and prices. If the business already keeps
-them in its own config, point the kit at that file instead. Otherwise create it once, as
+The business profile is the one store for services, prices, written policies, tone and the
+booking link. If the business already keeps them in its own config, point the kit at that file instead. Otherwise create it once, as
 `lib/business-profile.ts` in code or `business-profile.md` beside the kit (same fields):
 
 ```ts
 // lib/business-profile.ts
-type PolicyKey = "cancellation" | "refund" | "reschedule" | "deposit" | "guarantee"
+export type PolicyKey = "cancellation" | "refund" | "reschedule" | "deposit" | "guarantee"
 
 export const businessProfile = {
   version: 1,   // bump on every change; the kit and each post record the version they used
@@ -110,7 +111,7 @@ export const businessProfile = {
   // promise about the work. Posts and replies quote a value word for word, or link to it.
   policies: {
     cancellation: "Free to cancel up to 24 hours before the visit.",
-  } satisfies Partial<Record<PolicyKey, string>>,
+  } as Partial<Record<PolicyKey, string>>,   // widened, so a missing key reads as undefined
   // Multi-word phrases that no post and no customer reply may contain. Checks match them as
   // substrings, so never add single common words.
   neverSay: ["same-day", "lifetime guarantee", "cheapest in town"],

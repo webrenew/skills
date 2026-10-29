@@ -100,8 +100,8 @@ Each entry is one fact a post can show. Use the format in `references/content-ki
 
 Start with 10 entries. Good first entries: three recent jobs with photos, the license and
 insurance numbers, years in business, jobs done last year (from the records, not memory),
-two or three approved review quotes, the written guarantee. `content-case-study` adds more
-entries each time a job is finished.
+and two or three approved review quotes. The guarantee stays in the profile's `policies`, not
+in the proof bank. `content-case-study` adds more entries each time a job is finished.
 
 Rules:
 - A number goes in only with a source. "Over 2,000 jobs" needs the job records; a round
@@ -148,8 +148,8 @@ Every post carries a real person's name, not "Admin" or the business name.
   the same edit. Take `bookingUrl` from the live booking page (`launch-booking-payments`);
   leave it out until the business has one.
 - **Sites without a code store** (a Launch site, another CMS): keep `content-kit.md` with the
-  site files, in the same sections. Point to the business profile for identity and prices;
-  do not copy them.
+  site files, in the same sections. Point to the business identity and the business profile
+  (services, prices, policies, tone, booking link); do not copy them.
 - Give the kit a `version`. Bump it on each change, and record the version a post used.
 - Photos live in the site's media storage, with the proof bank entry id in the file name.
 
