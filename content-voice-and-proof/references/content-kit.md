@@ -1,15 +1,15 @@
 # Content Kit Format
 
 The kit adds only what content needs. Identity comes from `lib/business.ts`
-(`launch-local-seo`). Services, price guides, tone and `neverSay` come from
-`lib/business-profile.ts` (`launch-lead-triage-agent`). Never copy those fields into the kit.
+(`launch-local-seo`). Services, price guides, tone and `neverSay` come from the business
+profile, `lib/business-profile.ts` (shape below). Never copy those fields into the kit.
 
 ## Code sites: `lib/content-kit.ts`
 
 ```ts
 // lib/content-kit.ts
 import { business } from "@/lib/business"                   // launch-local-seo: the one identity
-import { businessProfile } from "@/lib/business-profile"    // launch-lead-triage-agent: services, prices, neverSay
+import { businessProfile } from "@/lib/business-profile"    // services, prices, tone, neverSay (below)
 
 export type ProofType = "job" | "number" | "photo" | "quote" | "credential" | "award"
 
@@ -86,15 +86,31 @@ Same sections, as headings: `Voice`, `Readers`, `Places`, `Claim limits`, `Autho
 
 Write the proof bank as a table with the same columns as `ProofEntry`.
 
-## No business profile yet
+## The business profile
 
-`lib/business-profile.ts` comes from `launch-lead-triage-agent`. A site without it (no triage
-agent, or no code store) still keeps one store for services and prices: create it once with
-the same fields (`version`, `services` with `key`, `name` and `priceGuide`, `tone`,
-`neverSay`), as `lib/business-profile.ts` in code or `business-profile.md` beside the kit. If
-the business already keeps services and prices in its own config, point the kit at that file
-instead. Never keep a second copy in the kit. When the triage agent comes later, it reads the
-same file.
+The business profile is the one store for services and prices. If the business already keeps
+them in its own config, point the kit at that file instead. Otherwise create it once, as
+`lib/business-profile.ts` in code or `business-profile.md` beside the kit (same fields):
+
+```ts
+// lib/business-profile.ts
+export const businessProfile = {
+  version: 1,   // bump on every change; the kit and each post record the version they used
+  services: [
+    { key: "water-heater", name: "Water heater repair and replacement", priceGuide: "Repairs from $149; replacement quoted on site" },
+    { key: "drain", name: "Drain cleaning", priceGuide: "From $129" },
+  ],
+  bookingUrl: "https://cal.com/harbor/visit",
+  tone: "Friendly, direct, no jargon. Sign as Sam.",
+  // Multi-word phrases that no post and no customer reply may contain. Checks match them as
+  // substrings, so never add single common words.
+  neverSay: ["same-day", "lifetime guarantee", "cheapest in town"],
+} as const
+```
+
+Identity (name, phone, hours, service area) stays in `lib/business.ts`. Never keep a second
+copy of the profile in the kit. Any agent that drafts replies to customers later reads the
+same file (see `launch-agent-guardrails`, section 2).
 
 ## Proof bank examples
 

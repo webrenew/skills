@@ -2,9 +2,9 @@
 
 Readers stop trusting a post when it reads like a machine wrote it. Remove each of these, then
 read the post aloud in the owner's voice. Put words the owner dislikes in the kit's
-`voice.wordsWeAvoid`. Do not copy this list into `neverSay` in the business profile: the lead
-triage agent matches `neverSay` as a substring of every reply draft, and common words here
-would send ordinary replies to manual review.
+`voice.wordsWeAvoid`. Do not copy this list into `neverSay` in the business profile: checks
+match `neverSay` as a substring of every post and reply draft, and common words here would
+flag ordinary text.
 
 ## Words and phrases
 

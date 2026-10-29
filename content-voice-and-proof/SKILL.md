@@ -25,7 +25,7 @@ someone writes it down. This skill writes it down once, in one place, so every p
 | Part | What it is | Where it comes from |
 |---|---|---|
 | Identity | Name, phone, hours, service area | `lib/business.ts` (`launch-local-seo`). Never copied into the kit. |
-| Services and prices | Each service, its price guide, phrases to never say | `lib/business-profile.ts` (`launch-lead-triage-agent`). Never copied into the kit. |
+| Services and prices | Each service, its price guide, phrases to never say | The business profile, `lib/business-profile.ts` (step 7 creates it if the site has none). Never copied into the kit. |
 | Voice | How the owner sounds: words to use, words to avoid, sentence habits | The owner's own emails and review replies |
 | Readers | Two or three kinds of customer, their situation, their worry, their words | Reviews, lead forms, calls |
 | Places | Towns and neighborhoods served, with true local detail | The owner, the job history |
@@ -33,10 +33,11 @@ someone writes it down. This skill writes it down once, in one place, so every p
 | Claim limits | What the business may say about prices, licenses, guarantees, timing | The owner, license records, the written guarantee |
 | Authors | Real names, roles, credentials, a short bio and a photo | The owner and staff |
 
-**One store, not two.** The site, the schema, the lead triage agent and every post read the
-business's facts from the same files. The kit adds only what content needs. When a fact
-changes (a new phone number, a new price guide), change it in `lib/business.ts` or
-`lib/business-profile.ts`, and bump the profile version. Never fix it in a post.
+**One store, not two.** The site, the schema, every post and any agent that replies to
+customers read the business's facts from the same files. The kit adds only what content
+needs. When a fact changes (a new phone number, a new price guide), change it in
+`lib/business.ts` or `lib/business-profile.ts`, and bump the profile version. Never fix it in
+a post.
 
 ## 1. Interview the owner (12 questions or fewer)
 
@@ -63,7 +64,7 @@ From the samples, write down:
   skill; that list stays there.
 - **Phrases never to say anywhere:** a claim or phrase that no lead reply and no post may use
   ("lifetime guarantee", "cheapest in town") goes in `neverSay` in `lib/business-profile.ts`.
-  The triage agent matches `neverSay` as a substring of every reply draft, so add only
+  Checks match `neverSay` as a substring of every post and reply draft, so add only
   multi-word phrases there, never single common words.
 - **Sentence habits:** short or long, "we" or "I", how they greet and sign off, how much humor.
 - **Three sample sentences** in the voice, taken word for word from the samples.
@@ -138,7 +139,8 @@ Every post carries a real person's name, not "Admin" or the business name.
 ## 7. Store the kit
 
 - **Code sites:** `lib/content-kit.ts`, which imports identity and services from the existing
-  files and adds only the content parts. See `references/content-kit.md` for the shape.
+  files and adds only the content parts. See `references/content-kit.md` for the shape, and
+  for the business profile when the site does not have one yet.
 - **Sites without a code store** (a Launch site, another CMS): keep `content-kit.md` with the
   site files, in the same sections. Point to the business profile for identity and prices;
   do not copy them.
@@ -155,7 +157,8 @@ Every post carries a real person's name, not "Admin" or the business name.
 [questions still open, consents to collect, photos to send, in plain words for the owner]
 
 ## Changes to the business profile
-[multi-word phrases added to neverSay, price guides to confirm; bump the profile version]
+[the new business profile if the site had none; multi-word phrases added to neverSay, price
+guides to confirm; bump the profile version]
 ```
 
 ## Related skills
@@ -166,5 +169,4 @@ Every post carries a real person's name, not "Admin" or the business name.
 - `content-case-study`: turns finished jobs into new proof bank entries.
 - `asd-ste100-writing`: the plain-English rules the voice sits on top of.
 - `launch-local-seo`: owns `lib/business.ts`, the one business identity.
-- `launch-lead-triage-agent`: owns `lib/business-profile.ts`, the services, prices and
-  `neverSay` list that the kit reuses.
+- `launch-agent-guardrails`: grounds any customer-facing agent on the same business profile.

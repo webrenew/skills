@@ -347,5 +347,4 @@ Text gets the fastest replies, and it has the strictest rules:
 ## Related skills
 
 - `launch-lead-capture`: the lead model, and the `lead-intake` task that starts this sequence.
-- `launch-lead-triage-agent`: drafts a personal first reply for the owner to approve.
 - `launch-agent-guardrails`: rules for any message an agent writes.

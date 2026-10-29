@@ -39,7 +39,9 @@ drafted -> approved -> sent
 ## 2. Ground every answer in the business's facts
 
 - Keep a versioned **business profile**: services, service area, hours, prices or price
-  ranges, policies, booking link, tone. The agent may state only what is in it.
+  ranges, policies, booking link, tone. The agent may state only what is in it. Use the same
+  profile that the site's content reads (`lib/business-profile.ts` in
+  `content-voice-and-proof`), so posts and replies never disagree.
 - When the answer is not in the profile, the agent says it will check and hands off. It
   never guesses a price, a date, availability or a policy.
 - Put this in the system prompt **and** check it in code: a reply that mentions a currency
@@ -149,6 +151,6 @@ minute. Set a retention period and delete logs after it.
 
 ## Related skills
 
-- `launch-lead-triage-agent`: an agent built on these rules.
+- `content-voice-and-proof`: the business profile (`lib/business-profile.ts`) agents ground on.
 - `launch-speed-to-lead`: automatic messages that are safe without a model.
 - `google-ads` and `meta-ads`: ad changes and spend that follow these approval rules.
