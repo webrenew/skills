@@ -36,6 +36,9 @@ owner cannot keep creates angry customers.
 - Ask only the questions the appointment needs. Add buffer times and a minimum notice period
   so the owner is not surprised by a booking in 20 minutes.
 - Send reminders 24 hours and 2 hours before. Reminders cut no-shows more than anything else.
+- Put the live booking URL in the business profile's `bookingUrl`, and the written
+  cancellation, reschedule and deposit terms in its `policies` (`content-voice-and-proof`), so
+  posts and reply agents use the same link and terms.
 
 ### Verify the webhook, then update the lead
 

@@ -1,15 +1,16 @@
 # Content Kit Format
 
 The kit adds only what content needs. Identity comes from `lib/business.ts`
-(`launch-local-seo`). Services, price guides, tone and `neverSay` come from the business
-profile, `lib/business-profile.ts` (shape below). Never copy those fields into the kit.
+(`launch-local-seo`). Services, price guides, the booking link, tone, written policies and
+`neverSay` come from the business profile, `lib/business-profile.ts` (shape below). Never
+copy those fields into the kit.
 
 ## Code sites: `lib/content-kit.ts`
 
 ```ts
 // lib/content-kit.ts
 import { business } from "@/lib/business"                   // launch-local-seo: the one identity
-import { businessProfile } from "@/lib/business-profile"    // services, prices, tone, neverSay (below)
+import { businessProfile } from "@/lib/business-profile"    // services, prices, policies, tone, neverSay (below)
 
 export type ProofType = "job" | "number" | "photo" | "quote" | "credential" | "award"
 
@@ -29,7 +30,9 @@ export const contentKit = {
   version: 1,
   profileVersion: businessProfile.version,   // the profile this kit was checked against
   voice: {
-    summary: "Friendly and direct. Explains the why. Never talks down. Signs as Sam.",
+    // The profile's tone (it wins: reply agents read it; it ends with a period), plus detail
+    // only content needs.
+    summary: `${businessProfile.tone} Explains the why. Never talks down.`,
     wordsWeUse: ["service call", "water heater", "crawl space", "flat-rate price"],
     // Content only. Phrases that lead replies must avoid too go in businessProfile.neverSay.
     wordsWeAvoid: ["state-of-the-art", "hassle-free", "your comfort is our priority"],
@@ -56,7 +59,7 @@ export const contentKit = {
     timing: { may: ["Most repairs are done in one visit"], mayNot: ["same-day", "within the hour"] },
     // Empty until the owner confirms: never a placeholder a post could quote.
     licenses: [] as { name: string; number: string; lookupUrl: string }[],
-    guarantee: null as string | null,   // the exact written wording
+    // The guarantee wording lives in businessProfile.policies.guarantee, never here.
     regulated: [] as string[],    // e.g. "gas lines: permit required, no DIY steps"
   },
   authors: [
@@ -82,26 +85,40 @@ move `proof` to a database table with the same fields. Keep the rest of the kit 
 Same sections, as headings: `Voice`, `Readers`, `Places`, `Claim limits`, `Authors`,
 `Proof bank`. Write one line at the top:
 
-> Identity, services and prices: see the business profile. Do not copy them here.
+> Identity: see the business identity. Services, prices, policies, tone and the booking link:
+> see the business profile. Do not copy them here.
 
 Write the proof bank as a table with the same columns as `ProofEntry`.
 
 ## The business profile
 
-The business profile is the one store for services and prices. If the business already keeps
-them in its own config, point the kit at that file instead. Otherwise create it once, as
-`lib/business-profile.ts` in code or `business-profile.md` beside the kit (same fields):
+The business profile is the one store for services, prices, written policies, tone and the
+booking link. If the business already keeps them in its own config, point the kit at that
+file instead. Otherwise create it once, as `lib/business-profile.ts` in code or
+`business-profile.md` beside the kit (same fields):
 
 ```ts
 // lib/business-profile.ts
+export type PolicyKey = "cancellation" | "refund" | "reschedule" | "deposit" | "guarantee"
+
 export const businessProfile = {
   version: 1,   // bump on every change; the kit and each post record the version they used
   services: [
     { key: "water-heater", name: "Water heater repair and replacement", priceGuide: "Repairs from $149; replacement quoted on site" },
     { key: "drain", name: "Drain cleaning", priceGuide: "From $129" },
   ],
-  bookingUrl: "https://cal.com/harbor/visit",
-  tone: "Friendly, direct, no jargon. Sign as Sam.",
+  // undefined until the live booking page exists; then paste its URL here (for example
+  // "https://cal.com/<business>/visit"). The key stays, so code that reads it still compiles.
+  bookingUrl: undefined as string | undefined,
+  tone: "Friendly, direct, no jargon. Sign as Sam.",   // the voice in one line; the kit builds on it
+  // Written terms, word for word, only for the keys the business has written down: the terms
+  // of doing business (cancellation, refund, reschedule, deposit) and the guarantee, the
+  // promise about the work. Posts and replies quote a value word for word. Omit an unwritten
+  // key; never write a placeholder such as "do not mention". No value may contain a neverSay
+  // phrase: if the owner's written terms need one, remove it from neverSay.
+  policies: {
+    cancellation: "Free to cancel up to 24 hours before the visit.",
+  } as Partial<Record<PolicyKey, string>>,   // widened, so a missing key reads as undefined
   // Multi-word phrases that no post and no customer reply may contain. Checks match them as
   // substrings, so never add single common words.
   neverSay: ["same-day", "lifetime guarantee", "cheapest in town"],
@@ -109,8 +126,12 @@ export const businessProfile = {
 ```
 
 Identity (name, phone, hours, service area) stays in `lib/business.ts`. Never keep a second
-copy of the profile in the kit. Any agent that drafts replies to customers later reads the
-same file (see `launch-agent-guardrails`, section 2).
+copy of the profile in the kit. If an older kit still has `claimLimits.guarantee`, move the
+wording, word for word, into `businessProfile.policies.guarantee` after the owner confirms
+it, and delete the field. If the old value is empty or a placeholder ("do not mention"),
+leave the key out. Any
+agent that drafts replies to customers later reads the same file (see
+`launch-agent-guardrails`, section 2).
 
 ## Proof bank examples
 

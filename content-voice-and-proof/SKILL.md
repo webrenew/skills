@@ -25,12 +25,12 @@ someone writes it down. This skill writes it down once, in one place, so every p
 | Part | What it is | Where it comes from |
 |---|---|---|
 | Identity | Name, phone, hours, service area | `lib/business.ts` (`launch-local-seo`). Never copied into the kit. |
-| Services and prices | Each service, its price guide, phrases to never say | The business profile, `lib/business-profile.ts` (step 7 creates it if the site has none). Never copied into the kit. |
+| Services, prices and policies | Each service, its price guide, the booking link, tone, written policies (cancellation, refund, reschedule, deposit, the guarantee), phrases to never say | The business profile, `lib/business-profile.ts` (step 7 creates it if the site has none). Never copied into the kit. |
 | Voice | How the owner sounds: words to use, words to avoid, sentence habits | The owner's own emails and review replies |
 | Readers | Two or three kinds of customer, their situation, their worry, their words | Reviews, lead forms, calls |
 | Places | Towns and neighborhoods served, with true local detail | The owner, the job history |
 | Proof bank | Real jobs, numbers, photos and approved quotes, each with source, date and consent | Job records, photos, reviews |
-| Claim limits | What the business may say about prices, licenses, guarantees, timing | The owner, license records, the written guarantee |
+| Claim limits | What the business may say about prices, licenses and timing; the guarantee and policies point to the profile | The owner, license records |
 | Authors | Real names, roles, credentials, a short bio and a photo | The owner and staff |
 
 **One store, not two.** The site, the schema, every post and any agent that replies to
@@ -100,8 +100,8 @@ Each entry is one fact a post can show. Use the format in `references/content-ki
 
 Start with 10 entries. Good first entries: three recent jobs with photos, the license and
 insurance numbers, years in business, jobs done last year (from the records, not memory),
-two or three approved review quotes, the written guarantee. `content-case-study` adds more
-entries each time a job is finished.
+and two or three approved review quotes. The guarantee stays in the profile's `policies`, not
+in the proof bank. `content-case-study` adds more entries each time a job is finished.
 
 Rules:
 - A number goes in only with a source. "Over 2,000 jobs" needs the job records; a round
@@ -114,14 +114,18 @@ Rules:
 ## 5. Write the claim limits
 
 Claim limits stop a post from promising what the business does not offer. Fill each line or
-mark it "do not mention".
+mark it "do not mention". The guarantee and policy terms are the exception: a term the
+business has not written down is left out of `policies` entirely.
 
 - **Prices:** only the price guides in `businessProfile.services`, as ranges or "from" prices,
   or "do not publish prices".
 - **Timing:** what the business can promise ("most repairs in one visit") and what it cannot
   ("same-day").
 - **Licenses and insurance:** name, number, issuer, and the public lookup link.
-- **Guarantee:** the exact written wording. Posts quote it word for word or link to it.
+- **Guarantee and policies:** the exact written wording of the guarantee and of the
+  cancellation, refund, reschedule and deposit terms, in the profile's `policies`. Posts quote
+  them word for word. A term the business has not written down is left out of `policies`
+  entirely, never marked "do not mention": a missing key is what sends it to the owner.
 - **Comparisons:** never name or run down a competitor.
 - **Regulated topics:** health, legal, money and safety claims follow `content-publish-check`.
 
@@ -140,10 +144,14 @@ Every post carries a real person's name, not "Admin" or the business name.
 
 - **Code sites:** `lib/content-kit.ts`, which imports identity and services from the existing
   files and adds only the content parts. See `references/content-kit.md` for the shape, and
-  for the business profile when the site does not have one yet.
+  for the business profile when the site does not have one yet. The profile's `tone` is the
+  voice in one line, and it wins, because reply agents read it and not the kit. The kit's
+  voice summary quotes it as is (see the shape) and adds only what content needs, so the tone
+  changes in one place. Take `bookingUrl` from the live booking page
+  (`launch-booking-payments`); leave it unset until the business has one.
 - **Sites without a code store** (a Launch site, another CMS): keep `content-kit.md` with the
-  site files, in the same sections. Point to the business profile for identity and prices;
-  do not copy them.
+  site files, in the same sections. Point to the business identity and the business profile
+  (services, prices, policies, tone, booking link); do not copy them.
 - Give the kit a `version`. Bump it on each change, and record the version a post used.
 - Photos live in the site's media storage, with the proof bank entry id in the file name.
 
@@ -157,15 +165,17 @@ Every post carries a real person's name, not "Admin" or the business name.
 [questions still open, consents to collect, photos to send, in plain words for the owner]
 
 ## Changes to the business profile
-[the new business profile if the site had none; multi-word phrases added to neverSay, price
-guides to confirm; bump the profile version]
+[the new business profile if the site had none; tone changes, the booking link once it is
+live, policies and the guarantee to confirm word for word, multi-word phrases added to
+neverSay, price guides to confirm; bump the profile version]
 ```
 
 ## Related skills
 
 - `content-topic-plan`: picks what to write, using the readers and the proof bank.
 - `content-blog-post`: writes each post from this kit.
-- `content-publish-check`: checks every claim against the proof bank and the claim limits.
+- `content-publish-check`: checks every claim against the proof bank, the claim limits and
+  the profile's prices and policies.
 - `content-case-study`: turns finished jobs into new proof bank entries.
 - `asd-ste100-writing`: the plain-English rules the voice sits on top of.
 - `launch-local-seo`: owns `lib/business.ts`, the one business identity.

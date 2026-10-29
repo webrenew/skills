@@ -18,7 +18,7 @@ already answer.
 | 7 | What may we say about price? Ranges, "from" prices, or nothing? | Claim limits | |
 | 8 | What can you promise about timing, and what can you not promise? | Claim limits | |
 | 9 | What licenses, insurance and certifications do you hold? Numbers and issuers, please. | Claim limits, authors | |
-| 10 | What is your guarantee, word for word? | Claim limits | |
+| 10 | What is your guarantee, word for word? And your cancellation, refund, reschedule and deposit terms? | Profile `policies` | |
 | 11 | Which words or phrases do you never want on your site? | Voice (`wordsWeAvoid`, or `neverSay` for replies too) | |
 | 12 | Who writes or approves posts? Their name, role, years in the trade, and a photo. | Authors | |
 

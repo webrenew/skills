@@ -20,7 +20,8 @@ business more than a year of posts earns. This check finds those before a reader
 what it can, and gives the owner a short card to approve.
 
 Load the content kit (`content-voice-and-proof`) and the business profile first. The proof
-bank and the claim limits are the sources this check trusts.
+bank, the claim limits and the profile's prices and `policies` are the sources this check
+trusts.
 
 ## 1. Build the claim ledger
 
@@ -33,12 +34,14 @@ Read the draft line by line. Put every checkable claim in the ledger.
 | 3 | "We are the most trusted plumber in Charleston" | superlative | none | cut |
 | 4 | "Done in one visit" | timing | Claim limits: "most repairs in one visit" | soften to "most repairs" |
 | 5 | "Licensed and insured" | credential | Proof bank `cred-master-plumber` | verified |
+| 6 | "Free to cancel up to 24 hours before the visit" | policy | `cancellation` in `businessProfile.policies`, word for word | verified |
 
-**Types:** price, timing, guarantee, credential, number (about the business), outside fact,
-quote, comparison, superlative, health, legal, money, safety.
+**Types:** price, timing, policy (including the guarantee), credential, number (about the
+business), outside fact, quote, comparison, superlative, health, legal, money, safety.
 
-**Status:** `verified` (a source in the kit or a primary source), `owner` (only the owner can
-confirm; goes on the approval card), `soften` (rewrite to what the source supports), `cut`.
+**Status:** `verified` (a source in the kit, the profile or a primary source), `owner` (only
+the owner can confirm; goes on the approval card), `soften` (rewrite to what the source
+supports), `cut`.
 
 Rules:
 - **No "studies show", "experts say", "research proves".** Name the source or cut it.
@@ -46,10 +49,12 @@ Rules:
   year. A blog that quotes a blog is not a source.
 - **Superlatives** (best, most trusted, number one, cheapest, fastest) are cut, unless an
   independent, dated source proves them ("Best of Charleston 2026, Charleston City Paper").
-- **Guarantees** are quoted word for word from the written guarantee, or linked.
+- **Guarantees and policies** (the guarantee, cancellation, refund, reschedule, deposit) are
+  quoted word for word from the profile's `policies`. No written value: `owner`, or cut.
 - **Customer quotes** are word for word, with written consent in the proof bank. No edit that
   changes the meaning. Trim only with "...", and never so it says more than the customer did.
-- **Prices and timing** come only from the claim limits.
+- **Prices** come only from `businessProfile.services[].priceGuide` (the claim limits'
+  `prices` line points there); **timing** comes only from the claim limits.
 - **Numbers about the business** ("1,200 jobs last year") come only from the proof bank.
 
 ## 2. High-risk topics: health, legal, money, safety
@@ -164,7 +169,7 @@ confirm, and one-tap Approve, Edit and Reject.
 
 ## Related skills
 
-- `content-voice-and-proof`: the proof bank and claim limits this check trusts.
+- `content-voice-and-proof`: the proof bank, claim limits and business profile this check trusts.
 - `content-blog-post`: the draft this check reviews, and the AI-tells list.
 - `content-case-study`: consent and testimonial rules for customer stories.
 - `content-refresh`: runs this check again on every refreshed post.

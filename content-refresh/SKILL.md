@@ -70,7 +70,7 @@ This is a spot check, not a ranking report. Answers change by person, place and 
 
 - **Keep the URL.** Never change the slug of a post that has visits or links. If a slug must
   change, add a 308 redirect from the old URL the same day.
-- **Fix the facts first:** prices from the claim limits, years, counts from the proof bank,
+- **Fix the facts first:** prices from the profile's price guides, years, counts from the proof bank,
   product models, rules and codes.
 - **Answer first:** rewrite the first 40 to 60 words to answer the question in full.
 - **Add proof:** a newer job, photo or number from the proof bank.
