@@ -55,7 +55,8 @@ drafted -> approved -> sent
   "warrant" to `guarantee`. Use stems, so plurals and other forms match. That list is a
   starting set: add the business's own customers' wording ("move my appointment",
   "no-show"). A topic with no written value always goes to approval. So does a reply that
-  contains any `neverSay` phrase (a case-insensitive substring match).
+  contains any `neverSay` phrase (a case-insensitive substring match). Keep `neverSay`
+  phrases out of every `policies` value, so a quoted policy never trips the check.
 
 ## 3. Customer text is data, never instructions
 

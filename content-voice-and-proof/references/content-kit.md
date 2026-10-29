@@ -30,7 +30,8 @@ export const contentKit = {
   version: 1,
   profileVersion: businessProfile.version,   // the profile this kit was checked against
   voice: {
-    // The profile's tone (it wins: reply agents read it), plus detail only content needs.
+    // The profile's tone (it wins: reply agents read it; it ends with a period), plus detail
+    // only content needs.
     summary: `${businessProfile.tone} Explains the why. Never talks down.`,
     wordsWeUse: ["service call", "water heater", "crawl space", "flat-rate price"],
     // Content only. Phrases that lead replies must avoid too go in businessProfile.neverSay.
@@ -113,7 +114,8 @@ export const businessProfile = {
   // Written terms, word for word, only for the keys the business has written down: the terms
   // of doing business (cancellation, refund, reschedule, deposit) and the guarantee, the
   // promise about the work. Posts and replies quote a value word for word. Omit an unwritten
-  // key; never write a placeholder such as "do not mention".
+  // key; never write a placeholder such as "do not mention". No value may contain a neverSay
+  // phrase: if the owner's written terms need one, remove it from neverSay.
   policies: {
     cancellation: "Free to cancel up to 24 hours before the visit.",
   } as Partial<Record<PolicyKey, string>>,   // widened, so a missing key reads as undefined
