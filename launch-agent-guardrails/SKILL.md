@@ -51,8 +51,9 @@ drafted -> approved -> sent
   the autonomy setting, when it mentions a currency amount or a date not found in these files,
   or a policy topic without quoting the profile's written value for it. Detect a policy topic
   with a case-insensitive keyword match per key (cancel, refund, reschedul, deposit,
-  guarantee/warranty); a topic with no written value always goes to approval. So does a reply
-  that contains any `neverSay` phrase (a case-insensitive substring match).
+  guarantee, where "warranty" also reads `policies.guarantee`); a topic with no written value
+  always goes to approval. So does a reply that contains any `neverSay` phrase (a
+  case-insensitive substring match).
 
 ## 3. Customer text is data, never instructions
 

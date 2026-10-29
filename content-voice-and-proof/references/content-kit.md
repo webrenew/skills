@@ -30,7 +30,8 @@ export const contentKit = {
   version: 1,
   profileVersion: businessProfile.version,   // the profile this kit was checked against
   voice: {
-    summary: "Friendly and direct. Explains the why. Never talks down. Signs as Sam.",
+    // The profile's tone (it wins: reply agents read it), plus detail only content needs.
+    summary: `${businessProfile.tone} Explains the why. Never talks down.`,
     wordsWeUse: ["service call", "water heater", "crawl space", "flat-rate price"],
     // Content only. Phrases that lead replies must avoid too go in businessProfile.neverSay.
     wordsWeAvoid: ["state-of-the-art", "hassle-free", "your comfort is our priority"],
@@ -91,8 +92,9 @@ Write the proof bank as a table with the same columns as `ProofEntry`.
 ## The business profile
 
 The business profile is the one store for services, prices, written policies, tone and the
-booking link. If the business already keeps them in its own config, point the kit at that file instead. Otherwise create it once, as
-`lib/business-profile.ts` in code or `business-profile.md` beside the kit (same fields):
+booking link. If the business already keeps them in its own config, point the kit at that
+file instead. Otherwise create it once, as `lib/business-profile.ts` in code or
+`business-profile.md` beside the kit (same fields):
 
 ```ts
 // lib/business-profile.ts
@@ -105,7 +107,7 @@ export const businessProfile = {
     { key: "drain", name: "Drain cleaning", priceGuide: "From $129" },
   ],
   bookingUrl: "https://cal.com/harbor/visit",   // only once the live booking page exists
-  tone: "Friendly, direct, no jargon. Sign as Sam.",   // short form of the kit's voice summary
+  tone: "Friendly, direct, no jargon. Sign as Sam.",   // the voice in one line; the kit builds on it
   // Written terms, word for word, only for the keys the business has written down: the terms
   // of doing business (cancellation, refund, reschedule, deposit) and the guarantee, the
   // promise about the work. Posts and replies quote a value word for word, or link to it.
@@ -119,7 +121,8 @@ export const businessProfile = {
 ```
 
 Identity (name, phone, hours, service area) stays in `lib/business.ts`. Never keep a second
-copy of the profile in the kit. Any agent that drafts replies to customers later reads the
+copy of the profile in the kit. If an older kit still has `claimLimits.guarantee`, move the
+wording, word for word, into `businessProfile.policies.guarantee` and delete the field. Any agent that drafts replies to customers later reads the
 same file (see `launch-agent-guardrails`, section 2).
 
 ## Proof bank examples

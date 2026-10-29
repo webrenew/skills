@@ -143,10 +143,10 @@ Every post carries a real person's name, not "Admin" or the business name.
 - **Code sites:** `lib/content-kit.ts`, which imports identity and services from the existing
   files and adds only the content parts. See `references/content-kit.md` for the shape, and
   for the business profile when the site does not have one yet. The profile's `tone` is the
-  short line that reply agents read, because they do not load the kit; the voice summary in
-  step 2 is the fuller version for content. Keep both: when one changes, update the other in
-  the same edit. Take `bookingUrl` from the live booking page (`launch-booking-payments`);
-  leave it out until the business has one.
+  voice in one line, and it wins, because reply agents read it and not the kit. The kit's
+  voice summary starts from it and adds only what content needs; it never restates it. Take
+  `bookingUrl` from the live booking page (`launch-booking-payments`); leave it out until the
+  business has one.
 - **Sites without a code store** (a Launch site, another CMS): keep `content-kit.md` with the
   site files, in the same sections. Point to the business identity and the business profile
   (services, prices, policies, tone, booking link); do not copy them.

@@ -34,6 +34,7 @@ Read the draft line by line. Put every checkable claim in the ledger.
 | 3 | "We are the most trusted plumber in Charleston" | superlative | none | cut |
 | 4 | "Done in one visit" | timing | Claim limits: "most repairs in one visit" | soften to "most repairs" |
 | 5 | "Licensed and insured" | credential | Proof bank `cred-master-plumber` | verified |
+| 6 | "Free to cancel up to 24 hours before the visit" | policy | `cancellation` in `businessProfile.policies`, word for word | verified |
 
 **Types:** price, timing, policy (including the guarantee), credential, number (about the
 business), outside fact, quote, comparison, superlative, health, legal, money, safety.
@@ -48,8 +49,8 @@ Rules:
   year. A blog that quotes a blog is not a source.
 - **Superlatives** (best, most trusted, number one, cheapest, fastest) are cut, unless an
   independent, dated source proves them ("Best of Charleston 2026, Charleston City Paper").
-- **Guarantees and policies** (cancellation, refund, reschedule, deposit) are quoted word for
-  word from the profile's `policies`, or linked. No written value: `owner`, or cut.
+- **Guarantees and policies** (the guarantee, cancellation, refund, reschedule, deposit) are
+  quoted word for word from the profile's `policies`, or linked. No written value: `owner`, or cut.
 - **Customer quotes** are word for word, with written consent in the proof bank. No edit that
   changes the meaning. Trim only with "...", and never so it says more than the customer did.
 - **Prices and timing** come only from the claim limits.
