@@ -25,7 +25,7 @@ someone writes it down. This skill writes it down once, in one place, so every p
 | Part | What it is | Where it comes from |
 |---|---|---|
 | Identity | Name, phone, hours, service area | `lib/business.ts` (`launch-local-seo`). Never copied into the kit. |
-| Services, prices and policies | Each service, its price guide, the booking link, tone, written policies (cancellation, refund, deposit, the guarantee), phrases to never say | The business profile, `lib/business-profile.ts` (step 7 creates it if the site has none). Never copied into the kit. |
+| Services, prices and policies | Each service, its price guide, the booking link, tone, written policies (cancellation, refund, reschedule, deposit, the guarantee), phrases to never say | The business profile, `lib/business-profile.ts` (step 7 creates it if the site has none). Never copied into the kit. |
 | Voice | How the owner sounds: words to use, words to avoid, sentence habits | The owner's own emails and review replies |
 | Readers | Two or three kinds of customer, their situation, their worry, their words | Reviews, lead forms, calls |
 | Places | Towns and neighborhoods served, with true local detail | The owner, the job history |
@@ -144,9 +144,9 @@ Every post carries a real person's name, not "Admin" or the business name.
   files and adds only the content parts. See `references/content-kit.md` for the shape, and
   for the business profile when the site does not have one yet. The profile's `tone` is the
   voice in one line, and it wins, because reply agents read it and not the kit. The kit's
-  voice summary starts from it and adds only what content needs; it never restates it. Take
-  `bookingUrl` from the live booking page (`launch-booking-payments`); leave it out until the
-  business has one.
+  voice summary quotes it as is (see the shape) and adds only what content needs, so the tone
+  changes in one place. Take `bookingUrl` from the live booking page
+  (`launch-booking-payments`); leave it unset until the business has one.
 - **Sites without a code store** (a Launch site, another CMS): keep `content-kit.md` with the
   site files, in the same sections. Point to the business identity and the business profile
   (services, prices, policies, tone, booking link); do not copy them.
@@ -172,7 +172,8 @@ neverSay, price guides to confirm; bump the profile version]
 
 - `content-topic-plan`: picks what to write, using the readers and the proof bank.
 - `content-blog-post`: writes each post from this kit.
-- `content-publish-check`: checks every claim against the proof bank and the claim limits.
+- `content-publish-check`: checks every claim against the proof bank, the claim limits and
+  the profile's prices and policies.
 - `content-case-study`: turns finished jobs into new proof bank entries.
 - `asd-ste100-writing`: the plain-English rules the voice sits on top of.
 - `launch-local-seo`: owns `lib/business.ts`, the one business identity.

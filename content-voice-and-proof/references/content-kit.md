@@ -106,7 +106,8 @@ export const businessProfile = {
     { key: "water-heater", name: "Water heater repair and replacement", priceGuide: "Repairs from $149; replacement quoted on site" },
     { key: "drain", name: "Drain cleaning", priceGuide: "From $129" },
   ],
-  bookingUrl: "https://cal.com/harbor/visit",   // only once the live booking page exists
+  // Set only once the live booking page exists; widened, so a missing link reads as undefined.
+  bookingUrl: "https://cal.com/harbor/visit" as string | undefined,
   tone: "Friendly, direct, no jargon. Sign as Sam.",   // the voice in one line; the kit builds on it
   // Written terms, word for word, only for the keys the business has written down: the terms
   // of doing business (cancellation, refund, reschedule, deposit) and the guarantee, the
@@ -122,8 +123,9 @@ export const businessProfile = {
 
 Identity (name, phone, hours, service area) stays in `lib/business.ts`. Never keep a second
 copy of the profile in the kit. If an older kit still has `claimLimits.guarantee`, move the
-wording, word for word, into `businessProfile.policies.guarantee` and delete the field. Any agent that drafts replies to customers later reads the
-same file (see `launch-agent-guardrails`, section 2).
+wording, word for word, into `businessProfile.policies.guarantee` and delete the field. Any
+agent that drafts replies to customers later reads the same file (see
+`launch-agent-guardrails`, section 2).
 
 ## Proof bank examples
 
