@@ -4,25 +4,27 @@ A curated collection of AI agent skills built by [Webrenew](https://webrenew.com
 
 We partner with [Vercel](https://vercel.com), [Blackbox.ai](https://blackbox.ai), and others to deliver high-performance digital products at scale. These skills encode our team's expertise into reusable, agent-ready knowledge — enabling faster audits, better code, and consistent quality across projects.
 
-## Skills
+## Site, leads and agent skills
+
+Skills that help a small business get found, win leads and bookings, and run customer-facing
+agents safely.
 
 | Skill | Description |
 |-------|-------------|
-| [website-speed-optimization](./website-speed-optimization) | Next.js performance audit and optimization — Core Web Vitals, bundle analysis, caching, and rendering strategies |
-| [seo-technical](./seo-technical) | Technical SEO implementation and audit — Metadata API, JSON-LD structured data, Open Graph, sitemaps, Core Web Vitals |
-| [accessibility-audit](./accessibility-audit) | WCAG 2.2 AA compliance audit and implementation — ARIA patterns, keyboard navigation, screen readers, testing |
-| [security-hardening](./security-hardening) | Security hardening and OWASP compliance — CSP, Auth.js, Server Action security, input validation, production checklist |
 | [asd-ste100-writing](./asd-ste100-writing) | Clear product copy with ASD-STE100 Simplified Technical English and benefit-first framing |
-| [dependabot-batch](./dependabot-batch) | Collapse many open Dependabot PRs into one branch and one PR — manifest edits, single lockfile regeneration, gates, held-back bumps |
-| [overscroll-behavior](./overscroll-behavior) | Stop the desktop rubber-band bounce and keep mobile pull-to-refresh — `overscroll-behavior: none` gated behind `(pointer: fine)`, `contain` for nested scrollers |
 | [launch-local-seo](./launch-local-seo) | Found in local search and the map pack: one business identity, LocalBusiness schema, service pages, Google Business Profile, reviews |
-| [launch-site-checklist](./launch-site-checklist) | A go-live check that catches the silent launch bugs: redirects, `noindex`, forms that deliver, analytics, ownership |
 | [launch-landing-page](./launch-landing-page) | One page, one offer, one action: structure, copy and design that turn visitors into calls and leads |
 | [launch-lead-capture](./launch-lead-capture) | Short forms that convert, spam protection without friction, and storage-first delivery so no lead is lost |
 | [launch-speed-to-lead](./launch-speed-to-lead) | A reply within minutes and a follow-up sequence that stops when the lead replies, books or opts out |
 | [launch-booking-payments](./launch-booking-payments) | Online booking (Cal.com) and payments (Stripe) with verified webhooks that keep leads in sync |
 | [launch-site-health-report](./launch-site-health-report) | A weekly plain-English report and instant alerts when the site, form or certificate breaks |
 | [launch-agent-guardrails](./launch-agent-guardrails) | Rules for any customer-facing agent: approval, grounding, injection safety, limits, kill switch, evals |
+
+Install the site, leads and agent skills:
+
+```bash
+npx skills add https://github.com/webrenew/skills --skill asd-ste100-writing launch-local-seo launch-landing-page launch-lead-capture launch-speed-to-lead launch-booking-payments launch-site-health-report launch-agent-guardrails
+```
 
 ## Content skills
 
@@ -70,6 +72,27 @@ npx skills add https://github.com/webrenew/skills --skill google-analytics googl
 The three skills share one event map, so GA4, Google Ads and Meta count the same leads. Each
 names its companion skills, such as `launch-landing-page` and `launch-lead-capture`, under
 "Related skills"; they are optional, and you can install each one on its own.
+
+## For agencies & developers
+
+Seven skills for the developer or agency that builds and maintains the site. They work in the
+code and at cut-over: Next.js, CSS, security headers, dependencies and the live go-live check.
+
+| Skill | Description |
+|-------|-------------|
+| [seo-technical](./seo-technical) | Technical SEO implementation and audit — Metadata API, JSON-LD structured data, Open Graph, sitemaps, Core Web Vitals |
+| [website-speed-optimization](./website-speed-optimization) | Next.js performance audit and optimization — Core Web Vitals, bundle analysis, caching, and rendering strategies |
+| [accessibility-audit](./accessibility-audit) | WCAG 2.2 AA compliance audit and implementation — ARIA patterns, keyboard navigation, screen readers, testing |
+| [overscroll-behavior](./overscroll-behavior) | Stop the desktop rubber-band bounce and keep mobile pull-to-refresh — `overscroll-behavior: none` gated behind `(pointer: fine)`, `contain` for nested scrollers |
+| [security-hardening](./security-hardening) | Security hardening and OWASP compliance — CSP, Auth.js, Server Action security, input validation, production checklist |
+| [dependabot-batch](./dependabot-batch) | Collapse many open Dependabot PRs into one branch and one PR — manifest edits, single lockfile regeneration, gates, held-back bumps |
+| [launch-site-checklist](./launch-site-checklist) | A go-live check that catches the silent launch bugs: redirects, `noindex`, forms that deliver, analytics, ownership |
+
+Install the agency and developer skills:
+
+```bash
+npx skills add https://github.com/webrenew/skills --skill seo-technical website-speed-optimization accessibility-audit overscroll-behavior security-hardening dependabot-batch launch-site-checklist
+```
 
 ## Skill Structure
 
