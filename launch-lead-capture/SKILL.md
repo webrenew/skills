@@ -121,7 +121,7 @@ export interface Lead {
   consentAt: Date | null        // set by the server when marketingConsent is true, never from the request
   utm: Record<string, string>
   ownerAlertClaimedAt: Date | null  // set just before the owner alert is sent
-  ownerAlertedAt: Date | null       // set after the owner alert (plain or triage card) is sent
+  ownerAlertedAt: Date | null       // set after the owner alert is sent
   ownerReAlertedAt: Date | null     // claimed just before the one 30-minute reminder; cleared if it fails
   agencyAlertClaimedAt: Date | null // set just before a stuck lead is reported to the agency
   agencyAlertedAt: Date | null      // set after a lead stuck for 24 hours is reported to the agency
@@ -167,7 +167,7 @@ The helpers that other skills call, and what each must do:
 | `releaseOwnerAlert(id)`, `markOwnerAlerted(id)` | Clear the claim after a failed send; set `ownerAlertedAt` after a successful one. |
 | `listUnalertedLeads({ olderThanMinutes, newerThanHours?, notReportedToAgency? })` | Leads that are not `spam`, not `isTest` and have no `ownerAlertedAt`, older than `olderThanMinutes` (and newer than `newerThanHours` when given). With `notReportedToAgency`, only those with `agencyAlertedAt` null. A broken test alert is the health check's job, not the sweeper's. |
 | `listLeadsToReAlert()` | `status = new`, not `isTest`, not `possibleSpam`, `ownerAlertedAt` over 30 minutes ago, `ownerReAlertedAt` null. |
-| `deliverOwnerAlert(lead, triage)` | Sends the triage card, or the plain alert when `triage` is null, on the owner's channel (email, SMS or Slack); test leads go to the test inbox. A `possibleSpam` lead is labelled "Possible spam", with "Not spam" (`confirmNotSpam`) and "Spam" (`setStatus(id, "spam", ...)`) actions. Throws on failure. |
+| `deliverOwnerAlert(lead)` | Sends the alert on the owner's channel (email, SMS or Slack); test leads go to the test inbox. A `possibleSpam` lead is labelled "Possible spam", with "Not spam" (`confirmNotSpam`) and "Spam" (`setStatus(id, "spam", ...)`) actions. Throws on failure. |
 | `unsubscribeByToken(token)` | Sets `unsubscribedAt` where `unsubscribeToken` matches and `unsubscribedAt` is null. See `launch-speed-to-lead`. |
 | `claimOwnerReminder(id)`, `releaseOwnerReminder(id)` | Set `ownerReAlertedAt` where it is null and return whether this caller won; clear it after a failed send. |
 | `deliverOwnerReminder(lead)` | Sends the one reminder (or alerts a second person). Throws on failure. |
@@ -284,10 +284,10 @@ export const leadInputSchema = z.object({
 
 | Message | Sent by | Skill |
 |---|---|---|
-| Owner alert | `sendOwnerAlert`, called by `lead-intake`: the triage card if triage is on and succeeds, otherwise the plain alert | this skill, `launch-lead-triage-agent` |
+| Owner alert | `sendOwnerAlert`, called by `lead-intake` | this skill |
 | Owner reminder after 30 minutes (once, real leads still `new`) | `lead-intake-sweeper` | this skill |
 | Customer confirmation ("we got your request") | `lead-follow-up`, step `confirmation` | `launch-speed-to-lead` |
-| Personal first reply (answers their question) | the owner, after approving the triage draft | `launch-lead-triage-agent` |
+| Personal first reply (answers their question) | the owner, from the alert: a call or an email | the owner |
 | Follow-ups and review request | `lead-follow-up`, `review-request` | `launch-speed-to-lead` |
 
 ```ts
@@ -315,17 +315,15 @@ import {
   deliverOwnerReminder, isBusinessHours, markAgencyAlerted, markOwnerAlerted, releaseAgencyAlert,
   releaseOwnerAlert, releaseOwnerReminder, type Lead,
 } from "@/lib/leads"
-import type { PreparedTriage } from "@/lib/lead-triage-run"
 
 /**
  * The only function that alerts the owner about a new lead. Claim first, so a retry or the
  * sweeper cannot send a second alert on SMS or Slack, which have no idempotency keys.
  */
-export async function sendOwnerAlert(lead: Lead, triage: PreparedTriage | null) {
+export async function sendOwnerAlert(lead: Lead) {
   if (!(await claimOwnerAlert(lead.id))) return "already"
   try {
-    await deliverOwnerAlert(lead, triage)   // triage card if present, else the plain alert;
-                                            // test leads go to the test inbox
+    await deliverOwnerAlert(lead)           // test leads go to the test inbox
   } catch (error) {
     await releaseOwnerAlert(lead.id)         // let the retry send it
     throw error
@@ -384,10 +382,6 @@ import { z } from "zod"
 import { getLead, listLeadsToReAlert, listUnalertedLeads } from "@/lib/leads"
 import { alertAgency, sendOwnerAlert, sendOwnerReminder } from "@/lib/owner-alerts"
 import { leadFollowUp } from "./lead-follow-up"              // launch-speed-to-lead
-// launch-lead-triage-agent. Without that skill, delete this import and the triage block.
-import { prepareTriage, type PreparedTriage } from "@/lib/lead-triage-run"
-
-const TRIAGE_ENABLED = process.env.LEAD_TRIAGE_ENABLED === "true"
 
 export const leadIntake = schemaTask({
   id: "lead-intake",
@@ -410,17 +404,7 @@ export const leadIntake = schemaTask({
 
     if (lead.ownerAlertedAt) return { alerted: "already" }
 
-    // Triage only prepares the card. A triage failure means a plain alert, never two alerts.
-    // prepareTriage reuses the stored card, so a retry or a sweep does not call the model again.
-    let triage: PreparedTriage | null = null
-    if (TRIAGE_ENABLED && !lead.isTest && !lead.possibleSpam) {
-      try {
-        triage = await prepareTriage(lead)
-      } catch (error) {
-        console.error("triage failed, sending plain alert", leadId, error)
-      }
-    }
-    const alerted = await sendOwnerAlert(lead, triage)
+    const alerted = await sendOwnerAlert(lead)
     // "already" with no ownerAlertedAt means another attempt holds the claim, or crashed
     // mid-send. Fail so this run retries; the claim goes stale after 3 minutes.
     if (alerted === "already" && !(await getLead(leadId))?.ownerAlertedAt) {
@@ -469,6 +453,14 @@ Every sender checks its marker before sending (`ownerAlertClaimedAt` and `ownerA
 for the owner, `sentSteps` for the customer) and sets it after a successful send, so a
 retried run never sends twice. Provider idempotency keys
 (Resend keeps them for 24 hours) are a second layer, not the only one.
+
+To add an AI-drafted reply to the owner alert, prepare the draft in `lead-intake` before
+the alert, store it once per lead, and grow the helpers to `sendOwnerAlert(lead, draft)` and
+`deliverOwnerAlert(lead, draft)`, with `draft` null for the plain alert. Before you attach a
+draft, check it in code against the business profile: no `neverSay` phrase, and no price,
+time or promise that the profile does not state (`launch-agent-guardrails`, section 2). A
+failed draft falls back to the plain alert: it never blocks the alert or sends a second one.
+The owner approves every draft before it reaches the customer.
 
 Adapt the storage to the project (Supabase, Postgres, a CRM API), but keep the order:
 **validate, store, then start the pipeline.**
@@ -546,5 +538,5 @@ state), **delivery risk** (notify-only, no retries, no alert on failure), **spam
 ## Related skills
 
 - `launch-speed-to-lead`: reply to the lead within minutes and follow up.
-- `launch-lead-triage-agent`: let an agent sort leads and draft replies for approval.
+- `launch-agent-guardrails`: the rules for any agent that adds a drafted reply to the alert.
 - `launch-site-health-report`: calls the test entry point each week.

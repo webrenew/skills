@@ -166,8 +166,8 @@ Follow `launch-agent-guardrails`. For Meta in particular:
 - **Always owner approval** for: publishing or turning on a campaign, ad set or ad; any
   budget or bid change; new audiences or customer list uploads; new creative and ad copy; and
   any special ad category decision. Store each approval with the change.
-- Comment replies are customer-facing: draft them for approval, as in
-  `launch-lead-triage-agent`.
+- Comment replies are customer-facing: draft them for approval (`launch-agent-guardrails`,
+  section 1).
 - Never accept Meta's terms, add payment methods, or change business portfolio access for
   the owner.
 - Alert the owner and the agency when daily spend is above 150% of the expected day, an ad is
@@ -196,6 +196,5 @@ source of each photo or video); and the instant form or landing page checklist.
 - `launch-lead-capture`: stores website and instant-form leads, with consent and UTMs.
 - `launch-speed-to-lead`: answers each lead within minutes.
 - `launch-agent-guardrails`: approval rules for anything that spends or posts.
-- `launch-lead-triage-agent`: drafts replies to leads and comments for approval.
 - `content-voice-and-proof`: the proof bank of real jobs, photos and approved quotes for ads.
 - `content-case-study`: customer consent and the FTC testimonial rules for job stories.

@@ -21,7 +21,6 @@ We partner with [Vercel](https://vercel.com), [Blackbox.ai](https://blackbox.ai)
 | [launch-lead-capture](./launch-lead-capture) | Short forms that convert, spam protection without friction, and storage-first delivery so no lead is lost |
 | [launch-speed-to-lead](./launch-speed-to-lead) | A reply within minutes and a follow-up sequence that stops when the lead replies, books or opts out |
 | [launch-booking-payments](./launch-booking-payments) | Online booking (Cal.com) and payments (Stripe) with verified webhooks that keep leads in sync |
-| [launch-lead-triage-agent](./launch-lead-triage-agent) | An AI agent that sorts each lead and drafts a reply for the owner to approve from a phone |
 | [launch-site-health-report](./launch-site-health-report) | A weekly plain-English report and instant alerts when the site, form or certificate breaks |
 | [launch-agent-guardrails](./launch-agent-guardrails) | Rules for any customer-facing agent: approval, grounding, injection safety, limits, kill switch, evals |
 
@@ -40,15 +39,15 @@ it with real work, and brings leads. A person approves everything before it goes
 | [content-case-study](./content-case-study) | Finished jobs become proof that wins the next one: consent, a five-question interview, and the FTC testimonial rules |
 | [content-refresh](./content-refresh) | Know which posts bring leads and fix the ones that slip, with a one-minute monthly report for the owner |
 
-Start with `content-voice-and-proof`: the other six load its content kit. The skills reuse the
-business identity and profile from `launch-local-seo` and `launch-lead-triage-agent`, and
-check copy with `asd-ste100-writing`, so the command below installs those three as well. The
-other skills named in each skill's "Related skills" are optional companions.
+Start with `content-voice-and-proof`: the other six load its content kit and business profile.
+The skills reuse the business identity from `launch-local-seo` and check copy with
+`asd-ste100-writing`, so the command below installs those two as well. The other skills named
+in each skill's "Related skills" are optional companions.
 
 Install the content skills:
 
 ```bash
-npx skills add https://github.com/webrenew/skills --skill content-voice-and-proof content-topic-plan content-blog-post content-publish-check content-repurpose content-case-study content-refresh launch-local-seo launch-lead-triage-agent asd-ste100-writing
+npx skills add https://github.com/webrenew/skills --skill content-voice-and-proof content-topic-plan content-blog-post content-publish-check content-repurpose content-case-study content-refresh launch-local-seo asd-ste100-writing
 ```
 
 ## PPC pack
