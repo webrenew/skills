@@ -112,7 +112,8 @@ export const businessProfile = {
   tone: "Friendly, direct, no jargon. Sign as Sam.",   // the voice in one line; the kit builds on it
   // Written terms, word for word, only for the keys the business has written down: the terms
   // of doing business (cancellation, refund, reschedule, deposit) and the guarantee, the
-  // promise about the work. Posts and replies quote a value word for word, or link to it.
+  // promise about the work. Posts and replies quote a value word for word. Omit an unwritten
+  // key; never write a placeholder such as "do not mention".
   policies: {
     cancellation: "Free to cancel up to 24 hours before the visit.",
   } as Partial<Record<PolicyKey, string>>,   // widened, so a missing key reads as undefined

@@ -50,11 +50,12 @@ drafted -> approved -> sent
 - Put this in the system prompt **and** check it in code: a reply goes to approval, whatever
   the autonomy setting, when it mentions a currency amount or a date not found in these files,
   or a policy topic without quoting the profile's written value for it. Detect a policy topic
-  with a case-insensitive keyword match per key (cancel, refund, reschedul, deposit,
-  guarantee, where "warranty" also reads `policies.guarantee`). That list is a starting set:
-  add the business's own customers' wording ("move my appointment", "no-show"). A topic with
-  no written value always goes to approval. So does a reply that contains any `neverSay` phrase (a
-  case-insensitive substring match).
+  with a case-insensitive keyword match, mapped to its key: "cancel" to `cancellation`,
+  "refund" to `refund`, "reschedul" to `reschedule`, "deposit" to `deposit`, "guarantee" and
+  "warranty" to `guarantee`. That list is a starting set: add the business's own customers'
+  wording ("move my appointment", "no-show"). A topic with no written value always goes to
+  approval. So does a reply that contains any `neverSay` phrase (a case-insensitive substring
+  match).
 
 ## 3. Customer text is data, never instructions
 

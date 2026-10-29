@@ -123,7 +123,8 @@ mark it "do not mention".
 - **Licenses and insurance:** name, number, issuer, and the public lookup link.
 - **Guarantee and policies:** the exact written wording of the guarantee and of the
   cancellation, refund, reschedule and deposit terms, in the profile's `policies`. Posts quote
-  them word for word or link to them.
+  them word for word. A term the business has not written down is left out of `policies`
+  entirely, never marked "do not mention": a missing key is what sends it to the owner.
 - **Comparisons:** never name or run down a competitor.
 - **Regulated topics:** health, legal, money and safety claims follow `content-publish-check`.
 

@@ -50,10 +50,11 @@ Rules:
 - **Superlatives** (best, most trusted, number one, cheapest, fastest) are cut, unless an
   independent, dated source proves them ("Best of Charleston 2026, Charleston City Paper").
 - **Guarantees and policies** (the guarantee, cancellation, refund, reschedule, deposit) are
-  quoted word for word from the profile's `policies`, or linked. No written value: `owner`, or cut.
+  quoted word for word from the profile's `policies`. No written value: `owner`, or cut.
 - **Customer quotes** are word for word, with written consent in the proof bank. No edit that
   changes the meaning. Trim only with "...", and never so it says more than the customer did.
-- **Prices and timing** come only from the claim limits.
+- **Prices** come only from `businessProfile.services[].priceGuide` (the claim limits'
+  `prices` line points there); **timing** comes only from the claim limits.
 - **Numbers about the business** ("1,200 jobs last year") come only from the proof bank.
 
 ## 2. High-risk topics: health, legal, money, safety
