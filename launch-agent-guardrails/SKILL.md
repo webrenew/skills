@@ -46,10 +46,12 @@ drafted -> approved -> sent
   The agent may state only what these files say.
 - When the answer is not in the profile, the agent says it will check and hands off. It
   never guesses a price, a date, availability or a policy.
-- Put this in the system prompt **and** check it in code: a reply that mentions a currency
-  amount, a date or a guarantee not found in the profile goes to approval, whatever the
-  autonomy setting. So does a reply that contains any `neverSay` phrase (a case-insensitive
-  substring match).
+- Put this in the system prompt **and** check it in code: a reply goes to approval, whatever
+  the autonomy setting, when it mentions a currency amount or a date not found in these files,
+  a policy (cancellation, refund, reschedule, deposit) that does not quote the profile's
+  `policies`, or a guarantee that is not the written wording (the content kit's
+  `claimLimits.guarantee`). So does a reply that contains any `neverSay` phrase (a
+  case-insensitive substring match).
 
 ## 3. Customer text is data, never instructions
 

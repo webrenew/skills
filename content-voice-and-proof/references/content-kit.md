@@ -1,8 +1,9 @@
 # Content Kit Format
 
 The kit adds only what content needs. Identity comes from `lib/business.ts`
-(`launch-local-seo`). Services, price guides, tone and `neverSay` come from the business
-profile, `lib/business-profile.ts` (shape below). Never copy those fields into the kit.
+(`launch-local-seo`). Services, price guides, the booking link, tone, written policies and
+`neverSay` come from the business profile, `lib/business-profile.ts` (shape below). Never
+copy those fields into the kit.
 
 ## Code sites: `lib/content-kit.ts`
 
@@ -94,6 +95,8 @@ them in its own config, point the kit at that file instead. Otherwise create it 
 
 ```ts
 // lib/business-profile.ts
+type PolicyKey = "cancellation" | "refund" | "reschedule" | "deposit"
+
 export const businessProfile = {
   version: 1,   // bump on every change; the kit and each post record the version they used
   services: [
@@ -101,10 +104,13 @@ export const businessProfile = {
     { key: "drain", name: "Drain cleaning", priceGuide: "From $129" },
   ],
   bookingUrl: "https://cal.com/harbor/visit",   // only once the live booking page exists
-  tone: "Friendly, direct, no jargon. Sign as Sam.",   // from the kit's voice summary
-  // Written policies (cancellation, refunds), word for word, for agents that must answer
-  // them. Optional. The guarantee wording stays in the kit's claimLimits.guarantee.
-  policies: { cancellation: "Free to cancel up to 24 hours before the visit." },
+  tone: "Friendly, direct, no jargon. Sign as Sam.",   // short form of the kit's voice summary
+  // Written policies, word for word, only for the keys the business has written down. A reply
+  // that states a policy must quote its value, or it goes to approval. The guarantee wording
+  // stays in the kit's claimLimits.guarantee.
+  policies: {
+    cancellation: "Free to cancel up to 24 hours before the visit.",
+  } satisfies Partial<Record<PolicyKey, string>>,
   // Multi-word phrases that no post and no customer reply may contain. Checks match them as
   // substrings, so never add single common words.
   neverSay: ["same-day", "lifetime guarantee", "cheapest in town"],
