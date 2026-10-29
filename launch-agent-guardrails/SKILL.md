@@ -81,8 +81,8 @@ One flag, in the database or an environment variable, that stops all automatic s
 once. Check it immediately before every send, not only at the start of a job. Show its state
 in the owner's dashboard with a one-tap toggle.
 
-Put the check in the one function that sends, so no sender can forget it. In the Launch pack
-that is `sendEmail` in `launch-speed-to-lead`: every automatic email (confirmation,
+Put the check in the one function that sends, so no sender can forget it. With
+`launch-speed-to-lead`, that is `sendEmail`: every automatic email (confirmation,
 follow-ups, review request, an auto-sent draft) is skipped while `paused` is on. A message the
 owner approves by hand is not automatic and still goes out. Other channels (SMS, Slack) need
 the same check in their one send function.
@@ -147,7 +147,8 @@ minute. Set a retention period and delete logs after it.
 | Logs | Every decision can be explained |
 | Evals | A case set exists and runs before changes |
 
-## Related Launch skills
+## Related skills
 
 - `launch-lead-triage-agent`: an agent built on these rules.
 - `launch-speed-to-lead`: automatic messages that are safe without a model.
+- `google-ads` and `meta-ads`: ad changes and spend that follow these approval rules.

@@ -209,7 +209,7 @@ Coming up
 - Say the impact first: "Your contact form has not delivered leads since 06:10."
 - Include the next step and who is on it.
 
-## Related Launch skills
+## Related skills
 
 - `launch-site-checklist`: the one-time launch check that this job repeats.
 - `launch-lead-capture`: the form and the delivery path that the form test exercises.

@@ -77,7 +77,7 @@ export function applyConsent(choice: Choice) {
 
 ### 3. One helper for every conversion
 
-The Launch skills call `track("Lead Submitted", ...)`. Keep that call site and map the name to
+The `launch-*` skills call `track("Lead Submitted", ...)`. Keep that call site and map the name to
 GA4 in one place. `meta-ads` adds its Pixel call to the same helper.
 
 ```ts

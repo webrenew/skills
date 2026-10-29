@@ -167,3 +167,13 @@ Agencies and freelancers leave. The owner must keep access.
 ### Passed
 Short list grouped by section.
 ```
+
+## Related skills
+
+- `launch-lead-capture`: forms that deliver every lead (section 3).
+- `launch-booking-payments`: live booking and payment links (section 3).
+- `launch-local-seo`: correct local business details (section 4).
+- `google-analytics`: conversion events that fire once, with consent (section 5).
+- `website-speed-optimization`: speed fixes (section 6).
+- `accessibility-audit`: a full accessibility audit (section 7).
+- `launch-site-health-report`: uptime and form alerts after launch (section 10).

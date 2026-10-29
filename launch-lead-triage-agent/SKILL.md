@@ -314,7 +314,7 @@ a reason from a short list.
   delay costs more than tokens.
 - Target under 30 seconds from form submit to owner card.
 
-## Related Launch skills
+## Related skills
 
 - `launch-agent-guardrails`: the rules this agent follows.
 - `launch-lead-capture`: the lead model and the `lead-intake` task that calls triage.

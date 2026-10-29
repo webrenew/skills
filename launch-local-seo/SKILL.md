@@ -151,7 +151,7 @@ When you audit a site, report a table: **item | status (pass / fix / owner actio
 matters | the fix**. Put owner actions (GBP, directories, review requests) in a separate list,
 in plain language, ready to send to the owner.
 
-## Related Launch skills
+## Related skills
 
 - `launch-site-checklist`: run it before go-live. It includes the local checks.
 - `launch-landing-page`: turns local visitors into calls and leads.
