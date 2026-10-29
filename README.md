@@ -69,8 +69,8 @@ npx skills add https://github.com/webrenew/skills --skill google-analytics googl
 ```
 
 The three skills share one event map, so GA4, Google Ads and Meta count the same leads. Each
-names its companion skills (landing page, lead capture, speed to lead, agent guardrails)
-under "Related skills"; they are optional, and you can install each one on its own.
+names its companion skills, such as `launch-landing-page` and `launch-lead-capture`, under
+"Related skills"; they are optional, and you can install each one on its own.
 
 ## Skill Structure
 
