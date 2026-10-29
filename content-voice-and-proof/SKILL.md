@@ -115,7 +115,8 @@ Rules:
 
 Claim limits stop a post from promising what the business does not offer. Fill each line or
 mark it "do not mention", except the guarantee and policy terms: leave an unwritten one out of
-`policies` (last bullet).
+`policies` (see
+"Guarantee and policies" below).
 
 - **Prices:** only the price guides in `businessProfile.services`, as ranges or "from" prices,
   or "do not publish prices".

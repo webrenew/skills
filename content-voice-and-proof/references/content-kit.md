@@ -125,7 +125,9 @@ export const businessProfile = {
 
 Identity (name, phone, hours, service area) stays in `lib/business.ts`. Never keep a second
 copy of the profile in the kit. If an older kit still has `claimLimits.guarantee`, move the
-wording, word for word, into `businessProfile.policies.guarantee` and delete the field. Any
+wording, word for word, into `businessProfile.policies.guarantee` after the owner confirms
+it, and delete the field. If the old value is empty or a placeholder ("do not mention"),
+leave the key out. Any
 agent that drafts replies to customers later reads the same file (see
 `launch-agent-guardrails`, section 2).
 
