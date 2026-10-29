@@ -151,3 +151,4 @@ minute. Set a retention period and delete logs after it.
 
 - `launch-lead-triage-agent`: an agent built on these rules.
 - `launch-speed-to-lead`: automatic messages that are safe without a model.
+- `google-ads` and `meta-ads`: ad changes and spend that follow these approval rules.
