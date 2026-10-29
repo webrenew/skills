@@ -455,9 +455,12 @@ retried run never sends twice. Provider idempotency keys
 (Resend keeps them for 24 hours) are a second layer, not the only one.
 
 To add an AI-drafted reply to the owner alert, prepare the draft in `lead-intake` before
-`sendOwnerAlert`, store it once per lead, and pass it to the alert. A failed draft falls back
-to the plain alert: it never blocks the alert or sends a second one. The owner approves every
-draft before it reaches the customer (see `launch-agent-guardrails`).
+the alert, store it once per lead, and grow the helpers to `sendOwnerAlert(lead, draft)` and
+`deliverOwnerAlert(lead, draft)`, with `draft` null for the plain alert. Before you attach a
+draft, check it in code against the business profile: no `neverSay` phrase, and no price,
+time or promise that the profile does not state (`launch-agent-guardrails`, section 2). A
+failed draft falls back to the plain alert: it never blocks the alert or sends a second one.
+The owner approves every draft before it reaches the customer.
 
 Adapt the storage to the project (Supabase, Postgres, a CRM API), but keep the order:
 **validate, store, then start the pipeline.**
