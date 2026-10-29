@@ -20,6 +20,12 @@ agents safely.
 | [launch-site-health-report](./launch-site-health-report) | A weekly plain-English report and instant alerts when the site, form or certificate breaks |
 | [launch-agent-guardrails](./launch-agent-guardrails) | Rules for any customer-facing agent: approval, grounding, injection safety, limits, kill switch, evals |
 
+Install the site, leads and agent skills:
+
+```bash
+npx skills add https://github.com/webrenew/skills --skill asd-ste100-writing launch-local-seo launch-landing-page launch-lead-capture launch-speed-to-lead launch-booking-payments launch-site-health-report launch-agent-guardrails
+```
+
 ## Content skills
 
 Seven skills that help a small business publish content that sounds like the owner, proves
@@ -70,7 +76,7 @@ names its companion skills, such as `launch-landing-page` and `launch-lead-captu
 ## For agencies & developers
 
 Seven skills for the developer or agency that builds and maintains the site. They work in the
-code: Next.js, CSS, security headers, dependencies and the go-live check.
+code and at cut-over: Next.js, CSS, security headers, dependencies and the live go-live check.
 
 | Skill | Description |
 |-------|-------------|
