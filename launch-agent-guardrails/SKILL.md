@@ -41,10 +41,9 @@ drafted -> approved -> sent
 - Ground the agent in two files that the site's content reads too, so posts and replies
   never disagree: the business identity (name, phone, hours, service area) in
   `lib/business.ts` (`launch-local-seo`), and a versioned **business profile** with services,
-  prices or price ranges, booking link, tone and `neverSay` phrases in
-  `lib/business-profile.ts` (shape in `content-voice-and-proof`). Add written policies
-  (cancellation, refunds) to the profile's `policies` when the agent must answer them. The agent may state
-  only what these files say.
+  prices or price ranges, booking link, tone, `neverSay` phrases and written `policies`
+  (cancellation, refunds) in `lib/business-profile.ts` (shape in `content-voice-and-proof`).
+  The agent may state only what these files say.
 - When the answer is not in the profile, the agent says it will check and hands off. It
   never guesses a price, a date, availability or a policy.
 - Put this in the system prompt **and** check it in code: a reply that mentions a currency

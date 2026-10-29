@@ -102,7 +102,8 @@ export const businessProfile = {
   ],
   bookingUrl: "https://cal.com/harbor/visit",   // only once the live booking page exists
   tone: "Friendly, direct, no jargon. Sign as Sam.",   // from the kit's voice summary
-  // Written policies, word for word, for agents that must answer them. Optional.
+  // Written policies (cancellation, refunds), word for word, for agents that must answer
+  // them. Optional. The guarantee wording stays in the kit's claimLimits.guarantee.
   policies: { cancellation: "Free to cancel up to 24 hours before the visit." },
   // Multi-word phrases that no post and no customer reply may contain. Checks match them as
   // substrings, so never add single common words.
