@@ -50,7 +50,7 @@ Install the content skills:
 npx skills add https://github.com/webrenew/skills --skill content-voice-and-proof content-topic-plan content-blog-post content-publish-check content-repurpose content-case-study content-refresh launch-local-seo asd-ste100-writing
 ```
 
-## PPC pack
+## Ads and analytics skills
 
 Three skills that show a small business which ads and visits bring customers, so the owner
 spends only on what works and approves every change.
@@ -61,7 +61,7 @@ spends only on what works and approves every change.
 | [google-ads](./google-ads) | Search campaigns for local services that pay only for searches that can become customers: structure, keywords, negatives, assets, bidding, a weekly check |
 | [meta-ads](./meta-ads) | Facebook and Instagram ads from real jobs, with Pixel and Conversions API behind consent, honest creative and the right special ad category |
 
-Install the pack:
+Install the ads and analytics skills:
 
 ```bash
 npx skills add https://github.com/webrenew/skills --skill google-analytics google-ads meta-ads
