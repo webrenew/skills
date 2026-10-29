@@ -64,7 +64,7 @@ story. If none exists, write the answer as an FAQ entry on the service page inst
 | H2s | The reader's next questions, in order. Each section opens with a one-sentence answer, then the detail. |
 | Experience | What the business saw on real jobs, in the text, with a real photo: "On a call in Mount Pleasant last month, the leak came from..." |
 | Steps | Numbered, one action per step, for anything the reader does |
-| Price | Only ranges or "from" prices in the claim limits; say what changes the price. No price guide: say what the quote depends on. |
+| Price | Only ranges or "from" prices from the profile's price guides (`businessProfile.services[].priceGuide`), as the claim limits allow; say what changes the price. No price guide: say what the quote depends on. |
 | When to call a pro | An honest line: what the reader can check safely, and where to stop |
 | Local detail | Only true local facts from the kit (housing age, water, weather, permits). Never a town name dropped in for search. |
 | Close | A 2-line summary, then one call to action. The copy sits above the button, never beside it. |

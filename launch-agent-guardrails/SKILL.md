@@ -52,10 +52,10 @@ drafted -> approved -> sent
   or a policy topic without quoting the profile's written value for it. Detect a policy topic
   with a case-insensitive keyword match, mapped to its key: "cancel" to `cancellation`,
   "refund" to `refund`, "reschedul" to `reschedule`, "deposit" to `deposit`, "guarantee" and
-  "warranty" to `guarantee`. That list is a starting set: add the business's own customers'
-  wording ("move my appointment", "no-show"). A topic with no written value always goes to
-  approval. So does a reply that contains any `neverSay` phrase (a case-insensitive substring
-  match).
+  "warrant" to `guarantee`. Use stems, so plurals and other forms match. That list is a
+  starting set: add the business's own customers' wording ("move my appointment",
+  "no-show"). A topic with no written value always goes to approval. So does a reply that
+  contains any `neverSay` phrase (a case-insensitive substring match).
 
 ## 3. Customer text is data, never instructions
 

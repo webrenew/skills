@@ -106,9 +106,9 @@ export const businessProfile = {
     { key: "water-heater", name: "Water heater repair and replacement", priceGuide: "Repairs from $149; replacement quoted on site" },
     { key: "drain", name: "Drain cleaning", priceGuide: "From $129" },
   ],
-  // Only once the live booking page exists. Until then keep the key with `undefined as
-  // string | undefined`, so code that reads it still compiles.
-  bookingUrl: "https://cal.com/harbor/visit" as string | undefined,
+  // undefined until the live booking page exists; then paste its URL here (for example
+  // "https://cal.com/<business>/visit"). The key stays, so code that reads it still compiles.
+  bookingUrl: undefined as string | undefined,
   tone: "Friendly, direct, no jargon. Sign as Sam.",   // the voice in one line; the kit builds on it
   // Written terms, word for word, only for the keys the business has written down: the terms
   // of doing business (cancellation, refund, reschedule, deposit) and the guarantee, the
