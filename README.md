@@ -20,6 +20,10 @@ agents safely.
 | [launch-site-health-report](./launch-site-health-report) | A weekly plain-English report and instant alerts when the site, form or certificate breaks |
 | [launch-agent-guardrails](./launch-agent-guardrails) | Rules for any customer-facing agent: approval, grounding, injection safety, limits, kill switch, evals |
 
+The go-live check, `launch-site-checklist`, is run by whoever launches the site, so it sits
+under [For agencies & developers](#for-agencies--developers). It hands the owner a short list of
+actions.
+
 Install the site, leads and agent skills:
 
 ```bash
