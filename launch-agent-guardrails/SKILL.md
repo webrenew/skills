@@ -43,7 +43,7 @@ drafted -> approved -> sent
   `lib/business.ts` (`launch-local-seo`), and a versioned **business profile** with services,
   prices or price ranges, booking link, tone and `neverSay` phrases in
   `lib/business-profile.ts` (shape in `content-voice-and-proof`). Add written policies
-  (cancellation, refunds) to the profile when the agent must answer them. The agent may state
+  (cancellation, refunds) to the profile's `policies` when the agent must answer them. The agent may state
   only what these files say.
 - When the answer is not in the profile, the agent says it will check and hands off. It
   never guesses a price, a date, availability or a policy.
@@ -145,7 +145,7 @@ minute. Set a retention period and delete logs after it.
 | Check | Pass when |
 |---|---|
 | Approval | Nothing customer-facing sends without approval or an earned autonomy rule |
-| Grounding | Prices, dates and policies come only from the profile |
+| Grounding | Prices, dates and policies come only from the profile and `lib/business.ts` |
 | Injection | Customer text is marked untrusted; tools are minimal |
 | Feedback | Thumbs, reasons and edits are stored |
 | Limits | Per-customer and daily caps exist and alert |

@@ -100,8 +100,10 @@ export const businessProfile = {
     { key: "water-heater", name: "Water heater repair and replacement", priceGuide: "Repairs from $149; replacement quoted on site" },
     { key: "drain", name: "Drain cleaning", priceGuide: "From $129" },
   ],
-  bookingUrl: "https://cal.com/harbor/visit",
-  tone: "Friendly, direct, no jargon. Sign as Sam.",
+  bookingUrl: "https://cal.com/harbor/visit",   // only once the live booking page exists
+  tone: "Friendly, direct, no jargon. Sign as Sam.",   // from the kit's voice summary
+  // Written policies, word for word, for agents that must answer them. Optional.
+  policies: { cancellation: "Free to cancel up to 24 hours before the visit." },
   // Multi-word phrases that no post and no customer reply may contain. Checks match them as
   // substrings, so never add single common words.
   neverSay: ["same-day", "lifetime guarantee", "cheapest in town"],
