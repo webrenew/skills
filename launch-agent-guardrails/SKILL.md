@@ -42,16 +42,17 @@ drafted -> approved -> sent
   never disagree: the business identity (name, phone, hours, service area) in
   `lib/business.ts` (`launch-local-seo`), and a versioned **business profile** with services,
   prices or price ranges, booking link, tone, `neverSay` phrases and written `policies`
-  (cancellation, refunds) in `lib/business-profile.ts` (shape in `content-voice-and-proof`).
+  (cancellation, refund, reschedule, deposit, guarantee) in `lib/business-profile.ts` (shape
+  in `content-voice-and-proof`).
   The agent may state only what these files say.
 - When the answer is not in the profile, the agent says it will check and hands off. It
   never guesses a price, a date, availability or a policy.
 - Put this in the system prompt **and** check it in code: a reply goes to approval, whatever
   the autonomy setting, when it mentions a currency amount or a date not found in these files,
-  a policy (cancellation, refund, reschedule, deposit) that does not quote the profile's
-  `policies`, or a guarantee that is not the written wording (the content kit's
-  `claimLimits.guarantee`). So does a reply that contains any `neverSay` phrase (a
-  case-insensitive substring match).
+  or a policy topic without quoting the profile's written value for it. Detect a policy topic
+  with a case-insensitive keyword match per key (cancel, refund, reschedul, deposit,
+  guarantee/warranty); a topic with no written value always goes to approval. So does a reply
+  that contains any `neverSay` phrase (a case-insensitive substring match).
 
 ## 3. Customer text is data, never instructions
 
@@ -146,7 +147,7 @@ minute. Set a retention period and delete logs after it.
 | Check | Pass when |
 |---|---|
 | Approval | Nothing customer-facing sends without approval or an earned autonomy rule |
-| Grounding | Prices, dates and policies come only from the profile and `lib/business.ts` |
+| Grounding | Identity and hours come only from `lib/business.ts`; prices and policies only from the profile |
 | Injection | Customer text is marked untrusted; tools are minimal |
 | Feedback | Thumbs, reasons and edits are stored |
 | Limits | Per-customer and daily caps exist and alert |

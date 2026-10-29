@@ -10,7 +10,7 @@ copy those fields into the kit.
 ```ts
 // lib/content-kit.ts
 import { business } from "@/lib/business"                   // launch-local-seo: the one identity
-import { businessProfile } from "@/lib/business-profile"    // services, prices, tone, neverSay (below)
+import { businessProfile } from "@/lib/business-profile"    // services, prices, policies, tone, neverSay (below)
 
 export type ProofType = "job" | "number" | "photo" | "quote" | "credential" | "award"
 
@@ -57,7 +57,7 @@ export const contentKit = {
     timing: { may: ["Most repairs are done in one visit"], mayNot: ["same-day", "within the hour"] },
     // Empty until the owner confirms: never a placeholder a post could quote.
     licenses: [] as { name: string; number: string; lookupUrl: string }[],
-    guarantee: null as string | null,   // the exact written wording
+    // The guarantee wording lives in businessProfile.policies.guarantee, never here.
     regulated: [] as string[],    // e.g. "gas lines: permit required, no DIY steps"
   },
   authors: [
@@ -95,7 +95,7 @@ them in its own config, point the kit at that file instead. Otherwise create it 
 
 ```ts
 // lib/business-profile.ts
-type PolicyKey = "cancellation" | "refund" | "reschedule" | "deposit"
+type PolicyKey = "cancellation" | "refund" | "reschedule" | "deposit" | "guarantee"
 
 export const businessProfile = {
   version: 1,   // bump on every change; the kit and each post record the version they used
@@ -105,9 +105,9 @@ export const businessProfile = {
   ],
   bookingUrl: "https://cal.com/harbor/visit",   // only once the live booking page exists
   tone: "Friendly, direct, no jargon. Sign as Sam.",   // short form of the kit's voice summary
-  // Written policies, word for word, only for the keys the business has written down. A reply
-  // that states a policy must quote its value, or it goes to approval. The guarantee wording
-  // stays in the kit's claimLimits.guarantee.
+  // Written terms, word for word, only for the keys the business has written down: the terms
+  // of doing business (cancellation, refund, reschedule, deposit) and the guarantee, the
+  // promise about the work. Posts and replies quote a value word for word, or link to it.
   policies: {
     cancellation: "Free to cancel up to 24 hours before the visit.",
   } satisfies Partial<Record<PolicyKey, string>>,

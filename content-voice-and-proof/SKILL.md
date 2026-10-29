@@ -25,12 +25,12 @@ someone writes it down. This skill writes it down once, in one place, so every p
 | Part | What it is | Where it comes from |
 |---|---|---|
 | Identity | Name, phone, hours, service area | `lib/business.ts` (`launch-local-seo`). Never copied into the kit. |
-| Services and prices | Each service, its price guide, phrases to never say | The business profile, `lib/business-profile.ts` (step 7 creates it if the site has none). Never copied into the kit. |
+| Services, prices and policies | Each service, its price guide, the booking link, tone, written policies (cancellation, refund, deposit, the guarantee), phrases to never say | The business profile, `lib/business-profile.ts` (step 7 creates it if the site has none). Never copied into the kit. |
 | Voice | How the owner sounds: words to use, words to avoid, sentence habits | The owner's own emails and review replies |
 | Readers | Two or three kinds of customer, their situation, their worry, their words | Reviews, lead forms, calls |
 | Places | Towns and neighborhoods served, with true local detail | The owner, the job history |
 | Proof bank | Real jobs, numbers, photos and approved quotes, each with source, date and consent | Job records, photos, reviews |
-| Claim limits | What the business may say about prices, licenses, guarantees, timing | The owner, license records, the written guarantee |
+| Claim limits | What the business may say about prices, licenses and timing; the guarantee and policies point to the profile | The owner, license records |
 | Authors | Real names, roles, credentials, a short bio and a photo | The owner and staff |
 
 **One store, not two.** The site, the schema, every post and any agent that replies to
@@ -121,7 +121,9 @@ mark it "do not mention".
 - **Timing:** what the business can promise ("most repairs in one visit") and what it cannot
   ("same-day").
 - **Licenses and insurance:** name, number, issuer, and the public lookup link.
-- **Guarantee:** the exact written wording. Posts quote it word for word or link to it.
+- **Guarantee and policies:** the exact written wording of the guarantee and of the
+  cancellation, refund, reschedule and deposit terms, in the profile's `policies`. Posts quote
+  them word for word or link to them.
 - **Comparisons:** never name or run down a competitor.
 - **Regulated topics:** health, legal, money and safety claims follow `content-publish-check`.
 
@@ -161,7 +163,8 @@ Every post carries a real person's name, not "Admin" or the business name.
 [questions still open, consents to collect, photos to send, in plain words for the owner]
 
 ## Changes to the business profile
-[the new business profile if the site had none; tone changes, multi-word phrases added to
+[the new business profile if the site had none; tone changes, the booking link once it is
+live, policies and the guarantee to confirm word for word, multi-word phrases added to
 neverSay, price guides to confirm; bump the profile version]
 ```
 

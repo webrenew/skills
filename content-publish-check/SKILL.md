@@ -20,7 +20,8 @@ business more than a year of posts earns. This check finds those before a reader
 what it can, and gives the owner a short card to approve.
 
 Load the content kit (`content-voice-and-proof`) and the business profile first. The proof
-bank and the claim limits are the sources this check trusts.
+bank, the claim limits and the profile's prices and `policies` are the sources this check
+trusts.
 
 ## 1. Build the claim ledger
 
@@ -34,8 +35,8 @@ Read the draft line by line. Put every checkable claim in the ledger.
 | 4 | "Done in one visit" | timing | Claim limits: "most repairs in one visit" | soften to "most repairs" |
 | 5 | "Licensed and insured" | credential | Proof bank `cred-master-plumber` | verified |
 
-**Types:** price, timing, guarantee, credential, number (about the business), outside fact,
-quote, comparison, superlative, health, legal, money, safety.
+**Types:** price, timing, guarantee, policy, credential, number (about the business), outside
+fact, quote, comparison, superlative, health, legal, money, safety.
 
 **Status:** `verified` (a source in the kit or a primary source), `owner` (only the owner can
 confirm; goes on the approval card), `soften` (rewrite to what the source supports), `cut`.
@@ -46,7 +47,8 @@ Rules:
   year. A blog that quotes a blog is not a source.
 - **Superlatives** (best, most trusted, number one, cheapest, fastest) are cut, unless an
   independent, dated source proves them ("Best of Charleston 2026, Charleston City Paper").
-- **Guarantees** are quoted word for word from the written guarantee, or linked.
+- **Guarantees and policies** (cancellation, refund, reschedule, deposit) are quoted word for
+  word from the profile's `policies`, or linked. No written value: `owner`, or cut.
 - **Customer quotes** are word for word, with written consent in the proof bank. No edit that
   changes the meaning. Trim only with "...", and never so it says more than the customer did.
 - **Prices and timing** come only from the claim limits.
